@@ -28,13 +28,13 @@
   <div class="container-fluid clearfix"><a href="index.php" title="Metro Admin" class="pull-left"><img src="{{ url_for('static', filename='assets/images/logo.png') }}" height="39px" ></a>
     <div class="user pull-right"><a href="#" title="User Options" data-toggle="dropdown" class="pull-right">
       <div class="pull-left">
-        <h5>{{ g.user.name }}</h5>
+        <h5>{{ current_user.member.name }}</h5>
         <p>{% if is_admin == 1 %}Instructor{% elif is_admin == 2 %}Assistant{% else %}Student{% endif %}</p>
       </div>
       <div class="pull-right">
       <img src="
-      {% if g.user.image_url %}
-      	{{ g.user.image_url }}
+      {% if current_user.member.image_url %}
+      	{{ current_user.member.image_url }}
       {% else %}
       	{{ url_for('static', filename='assets/images/user_pic/user.jpg') }}
       {% endif %}

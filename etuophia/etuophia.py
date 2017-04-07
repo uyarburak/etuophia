@@ -15,7 +15,7 @@ from datetime import datetime
 from flask import Flask, request, session, url_for, redirect, \
      render_template, abort, g, flash, _app_ctx_stack
 from werkzeug import check_password_hash, generate_password_hash
-
+from flask_login import LoginManager, login_required, logout_user, login_user, UserMixin, current_user
 
 # configuration
 DATABASE = '/tmp/etuophia.db'
@@ -28,6 +28,9 @@ app = Flask(__name__)
 app.config.from_object(__name__)
 app.config.from_envvar('ETUOPHIA_SETTINGS', silent=True)
 
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
 
 def get_db():
     """Opens a new database connection if there is none yet for the
@@ -98,28 +101,31 @@ def get_instructor(member_id):
     return rv[0] if rv else None
 
 
+def get_member(member_id):
+    member = None
+    instructor = False
+
+    member = query_db('select member.*, instructor.* from member, instructor where member.member_id = ? and member.member_id = instructor.member_id',
+                          [member_id], one=True);
+    if member:
+        instructor = True;
+    else:
+        member = query_db('select member.*, student.* from member, student where member.member_id = ? and member.member_id = student.member_id',
+                          [member_id], one=True);
+    return {'member': member, 'instructor': instructor};
+
+
 @app.before_request
 def before_request():
     if(request.endpoint):
         print("before request: " + request.endpoint);
-    g.user = None
-    g.instructor = False
-    if 'member_id' in session:
-        g.user = query_db('select member.*, instructor.* from member, instructor where member.member_id = ? and member.member_id = instructor.member_id',
-                          [session['member_id']], one=True);
-        if g.user:
-            g.instructor = True;
-        else:
-            g.user = query_db('select member.*, student.* from member, student where member.member_id = ? and member.member_id = student.member_id',
-                          [session['member_id']], one=True);
-    if not g.user and request.endpoint not in ('login', 'logout'):
-        return redirect(url_for('login'), 0);
 
 
 @app.route('/')
+@login_required
 def home():
     random_course = query_db('select * from enrollment where member_id = ? LIMIT 1',
-                            [g.user['member_id']], one=True);
+                            [current_user.id], one=True);
     if(random_course):
         print(random_course.keys());
         return redirect(url_for('course_main', course_id=random_course['course_id']));
@@ -130,22 +136,25 @@ def home():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     #if user is already logged in, redirect to home page  
-    if g.user:
-        return redirect(url_for('home'));
     if request.method == 'POST' and request.form['m_id']:
-        session['member_id'] = request.form['m_id'];
-        return redirect(url_for('home'));
+        user = load_user(request.form['m_id'])
+        if(user):
+            login_user(user)
+            return redirect(url_for('home'));
+        else:
+            return abort(401);
     else:
         members = query_db('select member_id, name from member', [], one=False);
         return render_template('tmp_login.html', members=members);
 
 
 @app.route('/course/<course_id>')
+@login_required
 def course_main(course_id):
-    enrollment_type = is_enroll(g.user['member_id'], course_id);
+    enrollment_type = is_enroll(current_user.id, course_id);
     if enrollment_type == None:
         return "You do not have permission to see it.";
-    if(enrollment_type and not g.instructor):
+    if(enrollment_type and not current_user.instructor):
         enrollment_type = 2;
     course = query_db('select * from course where course_id = ?',
                             [course_id], one=True)
@@ -153,12 +162,41 @@ def course_main(course_id):
                             [course_id], one=False)
     return render_template('course.html', course=course, is_admin=enrollment_type, topics=topics);
 
+
 #Temporary login system
 @app.route('/logout')
 def logout():
-    #if user is already logged in, redirect to home page
-    session['member_id'] = None;
+    logout_user();
     return redirect(url_for('login'));
+
+
+@login_manager.unauthorized_handler
+def unauthorized_handler():
+    print("unauthorized");
+    return redirect(url_for('login'), 0);
+
+
+# callback to reload the user object        
+@login_manager.user_loader
+def load_user(userid):
+    print(userid);
+    info = get_member(userid);
+    if(info['member']):
+        return User(userid, info['instructor'], info['member']);
+    return None;
+
+
+# silly user model
+class User(UserMixin):
+
+    def __init__(self, id, instructor, obj):
+        self.id = id
+        self.instructor = instructor
+        self.member = obj
+        
+    def __repr__(self):
+        return "%d/%s" % (self.id, self.member['name'])
+
 
 # add some filters to jinja
 app.jinja_env.filters['datetimeformat'] = format_datetime

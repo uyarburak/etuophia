@@ -1,14 +1,9 @@
 {% extends "master.html" %}
 {% block title %}
-  {% if g.user %}
-    {{ g.user.name }}
-  {% else %}
-      Please
-  {% endif %}
+  current_user.member.name
 {% endblock %}
 {% block body %}
-  {% if g.user %}
-    <h5>Hello {{ g.user.name }} ({% if is_admin %}Instructor{% else %}Student{% endif %})</h5><br>
+  <h5>Hello {{ current_user.member.name }} ({% if is_admin %}Instructor{% else %}Student{% endif %})</h5><br>
     Course Title: {{ course.course_title }}<br>
     Description: {{ course.description }}<br>
     Syllabus Link: {{ course.syllabus }}
@@ -20,8 +15,5 @@
     {% else %}
       <li>No topics here</li>
     {% endfor %}
-    </ul>
-  {% else %}
-    Go Away
-  {% endif %}
+  </ul>
 {% endblock %}

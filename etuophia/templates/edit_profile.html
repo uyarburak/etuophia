@@ -47,18 +47,18 @@
 			  <div class="form-group">
 			   <label class="control-label col-lg-2">Image URL</label>
 			   <div class="col-lg-10">
-				<input type="text" name="image_url" id="url" onchange="updateImage(this.value)" class="form-control" value="{{ g.user.image_url }}"></input>
+				<input type="text" name="image_url" id="url" onchange="updateImage(this.value)" class="form-control" value="{{ current_user.member.image_url }}"></input>
 			   </div>
 			  </div>
 			 </div>
 			</div>
-			{% if is_instructor %}
+			{% if current_user.instructor %}
 			<div class="row">
 			  <div class="col-md-6">
 			  <div class="form-group">
 			   <label class="control-label col-lg-4">Office</label>
 			   <div class="col-lg-8">
-				<input type="text" name="office" class="form-control" value="{{ g.user.office }}"/>
+				<input type="text" name="office" class="form-control" value="{{ current_user.member.office }}"/>
 			   </div>
 			  </div>
 			 </div>
@@ -66,7 +66,7 @@
 			  <div class="form-group">
 			   <label class="control-label col-lg-4">Tel</label>
 			   <div class="col-lg-8">
-				<input type="text" name="tel" class="form-control" value="{{ g.user.tel }}"/>
+				<input type="text" name="tel" class="form-control" value="{{ current_user.member.tel }}"/>
 			   </div>
 			  </div>
 			 </div>
@@ -76,7 +76,7 @@
 			  <div class="form-group">
 			   <label class="control-label col-lg-2">Website URL</label>
 			   <div class="col-lg-10">
-				<input type="text" name="website_url" class="form-control" value="{{ g.user.website }}"></input>
+				<input type="text" name="website_url" class="form-control" value="{{ current_user.member.website }}"></input>
 			   </div>
 			  </div>
 			 </div>
@@ -86,7 +86,7 @@
 		   <div class="panel-footer">
 			<div class="form-group">
 			 <div class="col-lg-12">
-			  <input type="hidden" name="member_id" value="{{ g.user.member_id }}">
+			  <input type="hidden" name="member_id" value="{{ current_user.id }}">
 			  <button type="submit" class="btn btn-sm btn-success">Submit Details</button>
 			  <a href="#" class="btn gray-bg">Cancel</a>
 			 </div>
