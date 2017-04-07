@@ -78,12 +78,12 @@ def query_db(query, args=(), one=False):
 
 def format_date(timestamp):
     """Format a timestamp for only display date."""
-    return datetime.utcfromtimestamp(timestamp).strftime('%d/%m/%Y')
+    return datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S').strftime('%d/%m/%Y')
 
 
 def format_datetime(timestamp):
     """Format a timestamp for display."""
-    return datetime.utcfromtimestamp(timestamp).strftime('%d/%m/%Y @ %H:%M')
+    return datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S').strftime('%d/%m/%Y @ %H:%M')
 
 #None means no enrollment, 0 is normal user, 1 is admin
 def is_enroll(member_id, course_id):
@@ -92,11 +92,10 @@ def is_enroll(member_id, course_id):
     return rv[0] if rv else None
 
 
-def is_assistant(member_id):
-    rv = query_db('select member_id from instructor where member_id = ?',
+def get_instructor(member_id):
+    rv = query_db('select * from instructor where member_id = ?',
                   [member_id], one=True)
-    return False if rv else True
-
+    return rv[0] if rv else None
 
 
 @app.before_request
@@ -104,17 +103,27 @@ def before_request():
     if(request.endpoint):
         print("before request: " + request.endpoint);
     g.user = None
+    g.instructor = False
     if 'member_id' in session:
-        g.user = query_db('select * from member where member_id = ?',
-                          [session['member_id']], one=True)
-    if not g.user and (request.endpoint != 'login' and request.endpoint != 'login_page'):
+        g.user = query_db('select member.*, instructor.* from member, instructor where member.member_id = ? and member.member_id = instructor.member_id',
+                          [session['member_id']], one=True);
+        if g.user:
+            g.instructor = True;
+        else:
+            g.user = query_db('select member.*, student.* from member, student where member.member_id = ? and member.member_id = student.member_id',
+                          [session['member_id']], one=True);
+    if not g.user and request.endpoint not in ('login', 'login_page', 'logout'):
         return redirect(url_for('login_page'), 0);
 
 
 @app.route('/')
 def home():
-    print(g.user['name'] + " at home");
-    return format_datetime(int(time.time()));
+    random_course = query_db('select * from enrollment where member_id = ? LIMIT 1',
+                            [g.user['member_id']], one=True);
+    if(random_course):
+        print(random_course.keys());
+        return redirect(url_for('course_main', course_id=random_course['course_id']));
+    return "There is no course for you :(";
 
 
 #Temporary login system
@@ -123,7 +132,7 @@ def login_page():
     #if user is already logged in, redirect to home page  
     if g.user:
         return redirect(url_for('home'));
-    return 'login please';
+    return render_template('login.html');
 
 #Temporary login system
 @app.route('/login/<member_id>')
@@ -138,7 +147,7 @@ def course_main(course_id):
     enrollment_type = is_enroll(g.user['member_id'], course_id);
     if enrollment_type == None:
         return "You do not have permission to see it.";
-    if(enrollment_type and is_assistant(g.user['member_id'])):
+    if(enrollment_type and not g.instructor):
         enrollment_type = 2;
     course = query_db('select * from course where course_id = ?',
                             [course_id], one=True)

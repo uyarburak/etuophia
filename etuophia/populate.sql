@@ -1,5 +1,12 @@
 insert into member values (null, 0, '', 'buyar@example.com', 'Burak', 'pass');
 insert into member values (null, 1, '', 'blabla@example.com', 'Emel', 'pass');
+insert into member values (null, 2, '', 'blabla2@example.com', 'Hoca', 'pass');
+
+insert into student (member_id, student_id, year, department) values
+	(1, '141101020', '4', 'Computer Scince'),
+	(2, '161201020', '1', 'Medicine');
+insert into instructor (member_id, office, tel, website) values
+	(3, 'OFFICE 1', '123456789', 'google.com');
 
 insert into course values
 	('1', '#1 Course', 'blabla', 'syllabus url'),
@@ -9,7 +16,8 @@ insert into course values
 insert into enrollment (member_id, course_id, is_admin) values
 	(1, '1', 0),
 	(1, '2', 1),
-	(2, '2', 0);
+	(2, '2', 0),
+	(3, '2', 1);
 
 insert into topic (content, title, locked, course_id, author_id) values
 	('blabla content', "title 1", 0, '1', 1),

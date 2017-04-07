@@ -16,7 +16,7 @@
     Topics:
     <ul>
     {% for topic in topics %}
-      <li><a href="#" >{{ topic.title }}</a></li>
+      <li><a href="#" >{{ topic.title }} at {{ topic.create_time|datetimeformat }}</a></li>
     {% else %}
       <li>No topics here</li>
     {% endfor %}
