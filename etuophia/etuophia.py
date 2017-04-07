@@ -112,8 +112,8 @@ def before_request():
         else:
             g.user = query_db('select member.*, student.* from member, student where member.member_id = ? and member.member_id = student.member_id',
                           [session['member_id']], one=True);
-    if not g.user and request.endpoint not in ('login', 'login_page', 'logout'):
-        return redirect(url_for('login_page'), 0);
+    if not g.user and request.endpoint not in ('login', 'logout'):
+        return redirect(url_for('login'), 0);
 
 
 @app.route('/')
@@ -127,19 +127,17 @@ def home():
 
 
 #Temporary login system
-@app.route('/login')
-def login_page():
+@app.route('/login', methods=['GET', 'POST'])
+def login():
     #if user is already logged in, redirect to home page  
     if g.user:
         return redirect(url_for('home'));
-    return render_template('login.html');
-
-#Temporary login system
-@app.route('/login/<member_id>')
-def login(member_id):  
-    if not g.user:
-        session['member_id'] = member_id;
-    return redirect(url_for('home'));
+    if request.method == 'POST' and request.form['m_id']:
+        session['member_id'] = request.form['m_id'];
+        return redirect(url_for('home'));
+    else:
+        members = query_db('select member_id, name from member', [], one=False);
+        return render_template('tmp_login.html', members=members);
 
 
 @app.route('/course/<course_id>')
@@ -160,7 +158,7 @@ def course_main(course_id):
 def logout():
     #if user is already logged in, redirect to home page
     session['member_id'] = None;
-    return redirect(url_for('login_page'));
+    return redirect(url_for('login'));
 
 # add some filters to jinja
 app.jinja_env.filters['datetimeformat'] = format_datetime

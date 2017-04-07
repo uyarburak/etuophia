@@ -1,0 +1,10 @@
+<form name="Start" method="POST" action="{{ url_for('login') }}">
+	<select name="m_id">
+		{% for member in members %}
+			<option value="{{ member.member_id }}">{{ member.name }}</option>
+  		{% else %}
+    		<option value="0">No one</option>
+  		{% endfor %}
+	</select>
+	<input type="submit" method="POST" value="Login">
+</form>
