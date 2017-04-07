@@ -1,0 +1,18 @@
+{% extends "master.html" %}
+{% block title %}
+  {% if g.user %}
+    {{ g.user.name }}
+  {% else %}
+      Please
+  {% endif %}
+{% endblock %}
+{% block body %}
+  {% if g.user %}
+    <h5>Hello {{ g.user.name }} ({% if is_admin %}Instructor{% else %}Student{% endif %})</h5><br>
+    Course Title: {{ course.course_title }}<br>
+    Description: {{ course.description }}<br>
+    Syllabus Link: {{ course.syllabus }}
+  {% else %}
+    Go Away
+  {% endif %}
+{% endblock %}

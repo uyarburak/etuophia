@@ -85,30 +85,62 @@ def format_datetime(timestamp):
     """Format a timestamp for display."""
     return datetime.utcfromtimestamp(timestamp).strftime('%d/%m/%Y @ %H:%M')
 
+#None means no enrollment, 0 is normal user, 1 is admin
+def is_enroll(member_id, course_id):
+    rv = query_db('select is_admin from enrollment where member_id = ? and course_id = ?',
+                  [member_id, course_id], one=True)
+    return rv[0] if rv else None
+
 
 @app.before_request
 def before_request():
-    print("before request: " + request.endpoint);
+    if(request.endpoint):
+        print("before request: " + request.endpoint);
     g.user = None
     if 'member_id' in session:
         g.user = query_db('select * from member where member_id = ?',
                           [session['member_id']], one=True)
-    if not g.user and request.endpoint != 'login':
-        return redirect(url_for('login'));
+    if not g.user and (request.endpoint != 'login' and request.endpoint != 'login_page'):
+        return redirect(url_for('login_page'), 0);
 
 
 @app.route('/')
 def home():
-    print("home sweet home");
-    if not g.user:
-        return format_datetime(int(time.time()));
+    print(g.user['name'] + " at home");
     return format_datetime(int(time.time()));
 
-@app.route('/login')
-def login():
-    print("login babe");
-    return 'hi poor thing';
 
+#Temporary login system
+@app.route('/login')
+def login_page():
+    #if user is already logged in, redirect to home page  
+    if g.user:
+        return redirect(url_for('home'));
+    return 'login please';
+
+#Temporary login system
+@app.route('/login/<member_id>')
+def login(member_id):  
+    if not g.user:
+        session['member_id'] = member_id;
+    return redirect(url_for('home'));
+
+
+@app.route('/course/<course_id>')
+def course_main(course_id):
+    enrollment_type = is_enroll(g.user['member_id'], course_id);
+    if enrollment_type == None:
+        return "You do not have permission to see it.";
+    course = query_db('select * from course where course_id = ?',
+                            [course_id], one=True)
+    return render_template('course.html', course=course, is_admin=enrollment_type);
+
+#Temporary login system
+@app.route('/logout')
+def logout():
+    #if user is already logged in, redirect to home page
+    session['member_id'] = None;
+    return redirect(url_for('login_page'));
 
 # add some filters to jinja
 app.jinja_env.filters['datetimeformat'] = format_datetime

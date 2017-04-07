@@ -1,0 +1,12 @@
+<!doctype html>
+<title>{% block title %}Hello{% endblock %} | Etuophia</title>
+<div class="page">
+  {% if g.user %}
+    <a href="{{ url_for('logout') }}">sign out [{{ g.user.name }}]</a>
+  {% else %}
+    <a href="{{ url_for('login') }}">sign in</a>
+  {% endif %}
+  <div class="body">
+  {% block body %}{% endblock %}
+  </div>
+</div>

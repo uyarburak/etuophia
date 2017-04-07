@@ -1,2 +1,5 @@
 etuophia.db
 .eggs/
+etuophia.egg-info
+etuophia/__init__.pyc
+etuophia/etuophia.pyc

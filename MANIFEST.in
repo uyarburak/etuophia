@@ -1,2 +1,3 @@
 graft etuophia/static
+graft etuophia/templates
 include etuophia/schema.sql
