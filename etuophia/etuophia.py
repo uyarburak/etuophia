@@ -92,6 +92,13 @@ def is_enroll(member_id, course_id):
     return rv[0] if rv else None
 
 
+def is_assistant(member_id):
+    rv = query_db('select member_id from instructor where member_id = ?',
+                  [member_id], one=True)
+    return False if rv else True
+
+
+
 @app.before_request
 def before_request():
     if(request.endpoint):
@@ -131,9 +138,13 @@ def course_main(course_id):
     enrollment_type = is_enroll(g.user['member_id'], course_id);
     if enrollment_type == None:
         return "You do not have permission to see it.";
+    if(enrollment_type and is_assistant(g.user['member_id'])):
+        enrollment_type = 2;
     course = query_db('select * from course where course_id = ?',
                             [course_id], one=True)
-    return render_template('course.html', course=course, is_admin=enrollment_type);
+    topics = query_db('select * from topic where course_id = ?',
+                            [course_id], one=False)
+    return render_template('course.html', course=course, is_admin=enrollment_type, topics=topics);
 
 #Temporary login system
 @app.route('/logout')
@@ -144,3 +155,4 @@ def logout():
 
 # add some filters to jinja
 app.jinja_env.filters['datetimeformat'] = format_datetime
+app.jinja_env.filters['dateformat'] = format_date

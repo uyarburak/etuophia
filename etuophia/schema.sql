@@ -2,10 +2,10 @@ drop table if exists topic;
 create table topic (
   topic_id integer primary key autoincrement,
   content text not null,
-  create_time integer not null,
+  create_time datetime default current_timestamp,
   title text not null,
-  locked integer,
-  last_modified integer,
+  locked integer default 0,
+  last_modified datetime default 0,
   course_id integer not null,
   author_id integer not null
 );
@@ -14,7 +14,7 @@ drop table if exists comment;
 create table comment (
   comment_id integer primary key autoincrement,
   content text,
-  comment_time integer,
+  comment_time datetime default current_timestamp,
   is_anonymous integer,
   author_id integer not null,
   parent_id integer,
@@ -33,14 +33,14 @@ drop table if exists enrollment;
 create table enrollment (
   member_id integer not null,
   course_id text not null,
-  is_admin integer,
+  is_admin integer default 0,
   PRIMARY KEY (member_id, course_id)
 );
 
 drop table if exists homework;
 create table homework (
   hw_id integer primary key autoincrement,
-  deadline integer not null,
+  deadline datetime not null,
   lock_type integer not null,
   resource_id integer
 );
@@ -92,7 +92,7 @@ create table read_history (
 drop table if exists resource;
 create table resource (
   resource_id integer primary key autoincrement,
-  pub_date integer,
+  pub_date datetime default current_timestamp,
   url text,
   commited_hw_id integer,
   course_id text,

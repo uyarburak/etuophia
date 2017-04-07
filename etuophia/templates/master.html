@@ -1,12 +1,75 @@
-<!doctype html>
+<html lang="en">
+<head>
 <title>{% block title %}Hello{% endblock %} | Etuophia</title>
-<div class="page">
-  {% if g.user %}
-    <a href="{{ url_for('logout') }}">sign out [{{ g.user.name }}]</a>
-  {% else %}
-    <a href="{{ url_for('login') }}">sign in</a>
-  {% endif %}
-  <div class="body">
-  {% block body %}{% endblock %}
+<!-- Meta Tags -->
+<meta http-equiv="Content-Type" content="text/HTML; charset=utf-8">
+<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<link rel="shortcut icon" href="{{ url_for('static', filename='assets/images/favicon.ico') }}" />
+<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=Standards"><![endif]-->
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<!-- Bootstrap Version 3.0-->
+<link rel="stylesheet" href="{{ url_for('static', filename='assets/css/bootstrap/bootstrap.min.css') }}" />
+<!-- Datetime 3.0-->
+<link rel="stylesheet" href="{{ url_for('static', filename='assets/css/bootstrap/bootstrap-datetimepicker.min.css') }}" />
+<!--Base style sheet-->
+<link href="{{ url_for('static', filename='assets/css/base.css') }}" type="text/css" rel="stylesheet">
+
+<link href="{{ url_for('static', filename='assets/css/fontawesome/font-awesome.min.css') }}" rel="stylesheet"/>
+			  
+<script src="//cdn.ckeditor.com/4.5.11/standard/ckeditor.js"></script>
+
+<link href="{{ url_for('static', filename='assets/css/data-tables/data-table.css') }}" type="text/css" rel="stylesheet">
+<!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+<!--[if lt IE 9]><script src="{{ url_for('static', filename='assets/js/html5shiv/html5shiv.js') }}" type="text/javascript"></script><script src="{{ url_for('static', filename='assets/js/respond/respond.min.js') }}" type="text/javascript"></script><![endif]-->
+</head>
+<body>
+<header>
+  <div class="container-fluid clearfix"><a href="index.php" title="Metro Admin" class="pull-left"><img src="{{ url_for('static', filename='assets/images/logo.png') }}" height="39px" ></a>
+    <div class="user pull-right"><a href="#" title="User Options" data-toggle="dropdown" class="pull-right">
+      <div class="pull-left">
+        <h5>{{ g.user.name }}</h5>
+        <p>{% if is_admin == 1 %}Instructor{% elif is_admin == 2 %}Assistant{% else %}Student{% endif %}</p>
+      </div>
+      <div class="pull-right">
+      <img src="
+      {% if g.user.image_url %}
+      	{{ g.user.image_url }}
+      {% else %}
+      	{{ url_for('static', filename='assets/images/user_pic/user.jpg') }}
+      {% endif %}
+      " width="38px" title="User Pic" alt="User Pic">
+      </div>
+      </a>
+      <ul class="dropdown-menu pull-right">
+        <li><a href="#">Edit profile</a></li>
+        <li><a href="#">Show profile</a></li>
+        <li><a href="{{ url_for('logout') }}">Sign out</a></li>
+      </ul>
+    </div>
   </div>
-</div>
+</header>
+<!--HEADER ENDS-->
+{% block topnav %}
+	<nav id="main_topnav">
+	  <div class="container-fluid"><a href="javascript:;" class="pull-left toggle-aside"><i class="icon-">&#xf0a9; </i></a><a href="javascript:;" class="pull-right toggle-topmenu"><i class="icon-">&#xf0c9; </i></a>
+	    <ul>
+	      <li><a href="{{ url_for('course_main', course_id=course.course_id) }}" title="Q/A"><i class="icon-comments"></i> Q/A</a></li>
+	      <li><a href="#" title="RESOURCES"><i class="icon-folder-open"></i> RESOURCES</a></li>
+	      {% if is_admin %}
+	      	<li><a href="#" title="Class Settings"><i class="icon-cog"></i> Class Settings</a></li>
+	      {% endif %}
+	    </ul>
+	  </div>
+	</nav>
+{% endblock %}
+{% block sidebar %}{% endblock %}
+<section id="main_content">
+  {% block body %}{% endblock %}
+</section>
+<script src="{{ url_for('static', filename='assets/js/scripts.js') }}"></script>
+<script type="text/javascript">
+	scripts("{{ url_for('static', filename='') }}");
+</script>
+</body>
+</html>
