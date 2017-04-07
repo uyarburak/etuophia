@@ -1,0 +1,1 @@
+from .etuophia import app

@@ -1,0 +1,2 @@
+graft etuophia/static
+include etuophia/schema.sql

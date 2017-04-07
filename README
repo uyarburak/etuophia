@@ -1,0 +1,36 @@
+
+                        / ETUophia /
+
+
+    ~ What is Etuophia?
+
+      A SQLite and Flask powered piazza clone
+
+    ~ How do I use it?
+
+      1. edit the configuration in the etuophia.py file or
+         export an ETUOPHIA_SETTINGS environment variable
+         pointing to a configuration file.
+
+      2. install the app from the root of the project directory
+
+         sudo pip install -U distribute --editable .
+
+      3. tell flask about the right application:
+
+         export FLASK_APP=etuophia
+
+      4. fire up a shell and run this:
+
+         flask initdb
+
+      5. if you do not want to deal with a empty database run this also:
+
+         flask populatedb
+
+      6. now you can run etuophia:
+
+         flask run
+
+         the application will greet you on
+         http://localhost:5000/
