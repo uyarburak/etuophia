@@ -90,8 +90,7 @@ $(function(){
 	
 	/*Set Aside Height*/
 	function asideHeight(){
-		$('aside').height( winHeight - headHeight );
-		console.log(winHeight + " - " + headHeight + " = " + ( winHeight - headHeight ));
+		$('aside').height( '100%' );
 	}
 	
 	asideHeight()
