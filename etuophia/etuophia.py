@@ -199,9 +199,7 @@ def course_main(course_id):
                             [course_id], one=True)
     news = query_db('select * from news where active',
                             [], one=False)
-    topics = common['topics'];
-    topic_count = (len(topics[0]['topics']) if len(topics) > 0 else 0) + (len(topics[1]['topics']) if len(topics) > 1 else 0) + (len(topics[2]['topics']) if len(topics) > 2 else 0);
-    return render_template('dashboard.html', news=news, topic_count=topic_count, comment_count=comment_count['cnt'], students=students, instructors=instructors, assistants=assistants, current_course=common['current_course'], is_admin=common['is_admin'], topics=common['topics'], courses=common['courses']);
+    return render_template('dashboard.html', news=news, topic_count=common['topics_count'], comment_count=comment_count['cnt'], students=students, instructors=instructors, assistants=assistants, current_course=common['current_course'], is_admin=common['is_admin'], topics=common['topics'], courses=common['courses']);
 
 def common_things(course_id):
     enrollment_type = is_enroll(current_user.id, course_id);
@@ -235,7 +233,7 @@ def common_things(course_id):
         topics.append(month);
     if len(older['topics']):
         topics.append(older);
-    return dict(current_course=course, is_admin=enrollment_type, topics=topics, courses=courses);
+    return dict(current_course=course, is_admin=enrollment_type, topics=topics, courses=courses, topics_count=len(topics_all));
 
 @app.route('/course/<course_id>/topic/<topic_id>')
 @login_required
