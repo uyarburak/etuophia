@@ -1,19 +1,11 @@
-{% extends "master.html" %}
+{% extends "topic_sidebar.html" %}
 {% block title %}
   current_user.member.name
 {% endblock %}
 {% block body %}
   <h5>Hello {{ current_user.member.name }} ({% if is_admin %}Instructor{% else %}Student{% endif %})</h5><br>
-    Course Title: {{ course.course_title }}<br>
-    Description: {{ course.description }}<br>
-    Syllabus Link: {{ course.syllabus }}
-
-    Topics:
-    <ul>
-    {% for topic in topics %}
-      <li><a href="#" >{{ topic.title }} at {{ topic.create_time|datetimeformat }}</a></li>
-    {% else %}
-      <li>No topics here</li>
-    {% endfor %}
+    Course Title: {{ current_course.course_title }}<br>
+    Description: {{ current_course.description }}<br>
+    Syllabus Link: {{ current_course.syllabus }}
   </ul>
 {% endblock %}

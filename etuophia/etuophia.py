@@ -151,16 +151,54 @@ def login():
 @app.route('/course/<course_id>')
 @login_required
 def course_main(course_id):
+    common = common_things(course_id);
+    if not common:
+        return "You do not have permission to see it.";
+    return render_template('course.html', current_course=common['current_course'], is_admin=common['is_admin'], topics=common['topics'], courses=common['courses']);
+
+def common_things(course_id):
     enrollment_type = is_enroll(current_user.id, course_id);
     if enrollment_type == None:
-        return "You do not have permission to see it.";
+        return None;
     if(enrollment_type and not current_user.instructor):
         enrollment_type = 2;
     course = query_db('select * from course where course_id = ?',
                             [course_id], one=True)
-    topics = query_db('select * from topic where course_id = ?',
+    courses = query_db('select * from course, enrollment where course.course_id = enrollment.course_id and enrollment.member_id = ?',
+                            [current_user.id], one=False)
+    topics_all = query_db('select * from topic where course_id = ?',
                             [course_id], one=False)
-    return render_template('course.html', course=course, is_admin=enrollment_type, topics=topics);
+    week = {'title': 'This week', 'topics': []};
+    month = {'title': 'This month', 'topics': []};
+    older = {'title': 'Older', 'topics': []};
+    now = datetime.now();
+
+    for topic in topics_all:
+        delta = now - datetime.strptime(topic['create_time'], '%Y-%m-%d %H:%M:%S');
+        if delta.days < 8:
+            week['topics'].append(topic);
+        elif delta.days < 32:
+            month['topics'].append(topic);
+        else:
+            older['topics'].append(topic);
+    topics = [];
+    if len(week['topics']):
+        topics.append(week);
+    if len(month['topics']):
+        topics.append(month);
+    if len(older['topics']):
+        topics.append(older);
+    return dict(current_course=course, is_admin=enrollment_type, topics=topics, courses=courses);
+
+@app.route('/course/<course_id>/topic/<topic_id>')
+@login_required
+def topic(course_id, topic_id):
+    common = common_things(course_id);
+    if not common:
+        return "You do not have permission to see it.";
+    topic = query_db('select * from topic where course_id = ? and topic_id = ?',
+                            [course_id, topic_id], one=True)
+    return render_template('topic.html', topic=topic, current_course=common['current_course'], is_admin=common['is_admin'], topics=common['topics'], courses=common['courses']);
 
 
 #Temporary login system

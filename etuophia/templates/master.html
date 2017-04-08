@@ -54,7 +54,7 @@
 	<nav id="main_topnav">
 	  <div class="container-fluid"><a href="javascript:;" class="pull-left toggle-aside"><i class="icon-">&#xf0a9; </i></a><a href="javascript:;" class="pull-right toggle-topmenu"><i class="icon-">&#xf0c9; </i></a>
 	    <ul>
-	      <li><a href="{{ url_for('course_main', course_id=course.course_id) }}" title="Q/A"><i class="icon-comments"></i> Q/A</a></li>
+	      <li><a href="{{ url_for('course_main', course_id=current_course.course_id) }}" title="Q/A"><i class="icon-comments"></i> Q/A</a></li>
 	      <li><a href="#" title="RESOURCES"><i class="icon-folder-open"></i> RESOURCES</a></li>
 	      {% if is_admin %}
 	      	<li><a href="#" title="Class Settings"><i class="icon-cog"></i> Class Settings</a></li>
