@@ -148,8 +148,8 @@ def login():
         return render_template('tmp_login.html', members=members);
 
 
-#Temporary login system
 @app.route('/course/<course_id>/add_topic', methods=['GET', 'POST'])
+@login_required
 def add_topic(course_id):
     #if user is already logged in, redirect to home page  
     if request.method == 'POST' and request.form['content']:
@@ -168,6 +168,20 @@ def add_topic(course_id):
         if not common:
             return "You do not have permission to see it.";
         return render_template('add_topic.html', current_course=common['current_course'], is_admin=common['is_admin'], topics=common['topics'], courses=common['courses']);
+
+@app.route('/course/<course_id>/topic/<topic_id>/add_comment', methods=['POST'])
+@login_required
+def add_comment(course_id, topic_id):
+    #if user is already logged in, redirect to home page  
+    if request.form['comment_content']:
+        form = request.form;
+        db = get_db()
+        db.execute('''insert into comment (content, is_anonymous, topic_id, parent_id, author_id) values
+         (?, ?, ?, ?, ?)''', (form['comment_content'], form['is_anonymous'], topic_id, form['parent_id'], current_user.id));
+        db.commit()
+        return redirect(url_for('topic', course_id=course_id, topic_id=topic_id));
+    else:
+        abort(401);
 
 
 @app.route('/course/<course_id>')
@@ -218,9 +232,11 @@ def topic(course_id, topic_id):
     common = common_things(course_id);
     if not common:
         return "You do not have permission to see it.";
-    topic = query_db('select * from topic where course_id = ? and topic_id = ?',
+    topic = query_db('select * from topic, member where topic.course_id = ? and topic.topic_id = ? and topic.author_id = member.member_id',
                             [course_id, topic_id], one=True)
-    return render_template('topic.html', topic=topic, current_course=common['current_course'], is_admin=common['is_admin'], topics=common['topics'], courses=common['courses']);
+    comments = query_db('select * from comment, member where comment.topic_id = ? and comment.author_id = member.member_id',
+                            [topic_id], one=False)
+    return render_template('topic.html', comments=comments, topic=topic, current_course=common['current_course'], is_admin=common['is_admin'], topics=common['topics'], courses=common['courses']);
 
 
 #Temporary login system

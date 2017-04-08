@@ -26,3 +26,11 @@ insert into topic (content, title, locked, course_id, author_id) values
 	('blabla content4', "title 4", 1, '2', 1),
 	('blabla content5', "title 5", 0, '2', 2),
 	('blabla content6', "title 6", 1, '2', 2);
+
+insert into comment (content, is_anonymous, topic_id, parent_id, author_id) values
+	('comment content 1', 0, 3, null, 1),
+	('comment content 2', 0, 3, 1, 2),
+	('comment content 3', 0, 3, 2, 3),
+	('comment content 4', 1, 3, 1, 1),
+	('comment content 5', 1, 3, 3, 2),
+	('comment content 6', 1, 3, null, 3);

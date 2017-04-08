@@ -9,7 +9,7 @@
 		  		<div class="panel colored"><div class="panel-heading black-bg"><h3 class="panel-title">{{ topic.title }}</h3>
 		  	    	<p class="pull-right" style="color: #fff;">
 		            	<span class="post-meta"><i class="icon-time"></i>{{ topic.create_time }}</span>
-		            	<span class="post-meta"><i class="icon-user"></i><a href="#" style="color: #fff;">{{ topic.author_id }}</a></span>
+		            	<span class="post-meta"><i class="icon-user"></i><a href="#" style="color: #fff;">{{ topic.name }}</a></span>
 	          		</p>
 		  		</div>
 		  		<div class="panel-body">{{ topic.content }}</div>
@@ -18,10 +18,15 @@
 		  		<div class="row"><div class="col-md-12"><div class="col-md-12 notification gray-bg"><strong>Locked Topic</strong> : No Comments Allowed </div></div></div>
 	  		{% else %}
 	            <h3>Comments</h3>
+	            {% for comment in comments %}
+	            	<li>{{ comment.comment_id }}. {{ comment.content }} by {{ comment.name }} {% if comment.is_anonymous %}(Anonymous){% endif %}</li>
+		        {% else %}
+		          There is no comment for this topic yet.
+		        {% endfor %}
 				<!-- comments will be here -->
 	           	<hr>
 			    <h3>Leave a Comment</h3>
-				<form action="" method="POST" enctype="multipart/form-data">
+				<form action="{{ url_for('add_comment', course_id=current_course.course_id, topic_id=topic.topic_id) }}" method="POST" enctype="multipart/form-data">
 
 					<div class="form-group">
 					<textarea name="comment_content"></textarea>
