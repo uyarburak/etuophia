@@ -9,6 +9,7 @@
 """
 
 import time
+import collections
 from sqlite3 import dbapi2 as sqlite3
 from hashlib import md5
 from datetime import datetime
@@ -179,9 +180,7 @@ def add_comment(course_id, topic_id):
         db.execute('''insert into comment (content, is_anonymous, topic_id, parent_id, author_id) values
          (?, ?, ?, ?, ?)''', (form['comment_content'], form['is_anonymous'], topic_id, form['parent_id'], current_user.id));
         db.commit()
-        return redirect(url_for('topic', course_id=course_id, topic_id=topic_id));
-    else:
-        abort(401);
+    return redirect(url_for('topic', course_id=course_id, topic_id=topic_id));
 
 
 @app.route('/course/<course_id>')
@@ -236,7 +235,16 @@ def topic(course_id, topic_id):
                             [course_id, topic_id], one=True)
     comments = query_db('select * from comment, member where comment.topic_id = ? and comment.author_id = member.member_id',
                             [topic_id], one=False)
-    return render_template('topic.html', comments=comments, topic=topic, current_course=common['current_course'], is_admin=common['is_admin'], topics=common['topics'], courses=common['courses']);
+    recursive_comments = {};
+    for comment in comments:
+        key = comment['parent_id'] if comment['parent_id'] else 0;
+        if not key in recursive_comments:
+            recursive_comments[key] = [comment];
+        else:
+            recursive_comments[key].append(comment);
+    ordered = collections.OrderedDict(sorted(recursive_comments.items()))
+    print(ordered);
+    return render_template('topic.html', comments=ordered, topic=topic, current_course=common['current_course'], is_admin=common['is_admin'], topics=common['topics'], courses=common['courses']);
 
 
 #Temporary login system
@@ -258,7 +266,7 @@ def load_user(userid):
     print(userid);
     info = get_member(userid);
     if(info['member']):
-        return User(userid, info['instructor'], info['member']);
+        return User(int(userid), info['instructor'], info['member']);
     return None;
 
 

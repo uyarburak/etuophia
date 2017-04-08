@@ -8,7 +8,7 @@
 	    	<div class="col-md-12">
 		  		<div class="panel colored"><div class="panel-heading black-bg"><h3 class="panel-title">{{ topic.title }}</h3>
 		  	    	<p class="pull-right" style="color: #fff;">
-		            	<span class="post-meta"><i class="icon-time"></i>{{ topic.create_time }}</span>
+		            	<span class="post-meta"><i class="icon-time"></i>{{ topic.create_time|datetimeformat }}</span>
 		            	<span class="post-meta"><i class="icon-user"></i><a href="#" style="color: #fff;">{{ topic.name }}</a></span>
 	          		</p>
 		  		</div>
@@ -18,11 +18,21 @@
 		  		<div class="row"><div class="col-md-12"><div class="col-md-12 notification gray-bg"><strong>Locked Topic</strong> : No Comments Allowed </div></div></div>
 	  		{% else %}
 	            <h3>Comments</h3>
-	            {% for comment in comments %}
-	            	<li>{{ comment.comment_id }}. {{ comment.content }} by {{ comment.name }} {% if comment.is_anonymous %}(Anonymous){% endif %}</li>
-		        {% else %}
-		          There is no comment for this topic yet.
-		        {% endfor %}
+	            <ul>
+	            {% if is_admin %}
+		            {% for comment in comments[0] %}
+		            	{{ render_comment_as_admin(comment) }}
+			        {% else %}
+			          There is no comment for this topic yet.
+			        {% endfor %}
+	            {% else %}
+		            {% for comment in comments[0] %}
+		            	{{ render_comment(comment) }}
+			        {% else %}
+			          There is no comment for this topic yet.
+			        {% endfor %}
+	            {% endif %}
+		        </ul>
 				<!-- comments will be here -->
 	           	<hr>
 			    <h3>Leave a Comment</h3>
@@ -47,4 +57,94 @@
 	    </div>
 	  </div>
   </div>
+        <script type="text/javascript">
+    function myfunc2(comment_id) {
+ var selectedobj=document.getElementById(comment_id);
+
+  if(selectedobj.className=='hide'){  //check if classname is hide 
+    selectedobj.style.display = "block";
+    selectedobj.readOnly=true;
+    selectedobj.className ='panel panel-default';
+  }else{
+    selectedobj.style.display = "none";
+    selectedobj.className ='hide';
+ }
+}
+    </script>
 {% endblock %}
+
+{% macro render_comment(comment) -%}
+	<hr><div class="media"><a href="#" class="pull-left">
+	{% if comment.member_id == current_user.id %}
+		{{ render_info_as_admin(comment) }}
+	{% else %}
+		{% if comment.is_anonymous %}
+			<img src="{{ url_for('static', filename='assets/images/user_pic/anonymous.jpg') }}">
+		{% elif comment.image_url %}
+			<img src="{{ comment.image_url }}">
+		{% else %}
+			<img src="{{ url_for('static', filename='assets/images/user_pic/user.jpg') }}">
+		{% endif %}
+		</a><div class="media-body"><h5 class="media-heading">
+		{% if comment.is_anonymous %}Anonymous{% else %}{{comment.name}}{% endif %}
+	{% endif %}
+	 <b onclick="myfunc2('{{ comment.comment_id }}')" class="badge bg-info">Reply</b><small class="pull-right">{{ comment.comment_time }}</small></h5>{{ comment.content }}
+	{% if comment.member_id == current_user.member_id %}
+		<a onclick="removeCommentStudent({{ comment.comment_id }})">Delete</a>
+	{% endif %}
+	<form id="{{ comment.comment_id }}" class="hide" style="display:none" action="{{ url_for('add_comment', course_id=current_course.course_id, topic_id=topic.topic_id) }}" method="POST" enctype="multipart/form-data">
+
+			<div class="form-group">
+				<textarea rows="3" id="comment_content" name="comment_content"></textarea>
+			</div>
+			<div class="form-group">
+			 <div class="col-lg-2">
+			  <select name="is_anonymous" class="col-lg-12 chzn-nopadd chzn-select-no-single"><option value="0">{{ current_user.member.name }}</option> <option value="1">Anonymous to Students</option></select>
+			 </div>
+        </div>
+			<input type="hidden" id="parent_id" name="parent_id" value="{{ comment.comment_id }}">
+			<button type="submit" class="btn btn-sm btn-success">Reply</button>
+	</form>
+	{% if comments[comment.comment_id] %}
+		{% for subcomment in comments[comment.comment_id] %}
+			{{ render_comment(subcomment) }}
+		{% endfor %}
+	{% endif %}
+	</div></div>
+{%- endmacro %}
+
+{% macro render_comment_as_admin(comment) -%}
+	<hr><div class="media"><a href="#" class="pull-left">
+	{{ render_info_as_admin(comment) }}
+	<b onclick="myfunc2('{{ comment.comment_id }}')" class="badge bg-info">Reply</b><small class="pull-right">{{ comment.comment_time }}</small></h5>{{ comment.content }}
+	<a onclick="removeCommentAdmin({{ comment.comment_id }})">Delete</a>
+	<form id="{{ comment.comment_id }}" class="hide" style="display:none" action="{{ url_for('add_comment', course_id=current_course.course_id, topic_id=topic.topic_id) }}" method="POST" enctype="multipart/form-data">
+
+			<div class="form-group">
+				<textarea rows="3" id="comment_content" name="comment_content"></textarea>
+			</div>
+			<div class="form-group">
+			 <div class="col-lg-2">
+			  <select name="is_anonymous" class="col-lg-12 chzn-nopadd chzn-select-no-single"><option value="0">{{ current_user.member.name }}</option> <option value="1">Anonymous to Students</option></select>
+			 </div>
+        </div>
+			<input type="hidden" id="parent_id" name="parent_id" value="{{ comment.comment_id }}">
+			<button type="submit" class="btn btn-sm btn-success">Reply</button>
+	</form>
+	{% if comments[comment.comment_id] %}
+		{% for subcomment in comments[comment.comment_id] %}
+			{{ render_comment_as_admin(subcomment) }}
+		{% endfor %}
+	{% endif %}
+	</div></div>
+{%- endmacro %}
+
+{% macro render_info_as_admin(comment) -%}
+	{% if comment.image_url %}
+		<img src="{{ comment.image_url }}">
+	{% else %}
+		<img src="{{ url_for('static', filename='assets/images/user_pic/user.jpg') }}">
+	{% endif %}
+	</a><div class="media-body"><h5 class="media-heading">{{comment.name}}
+	{% if comment.is_anonymous %} (Anonymous) {% endif %} 
+{%- endmacro %}
