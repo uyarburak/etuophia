@@ -50,7 +50,7 @@
 					  <select name="is_anonymous" class="col-lg-12 chzn-nopadd chzn-select-no-single"><option value="0">{{ current_user.member.name }}</option> <option value="1">Anonymous to Students</option></select>
 					 </div>
 		        </div>
-					<input type="hidden" id="parent_id" name="parent_id" value="null">
+					<input type="hidden" id="parent_id" name="parent_id" value="0">
 					<button type="submit" class="btn btn-sm btn-success">Post Comment</button>
 			   </form>
 	  		{% endif %}
@@ -71,6 +71,90 @@
  }
 }
     </script>
+<!-- deleteTopic Modal -->
+  <div class="modal fade" id="deleteTopicModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+   <div class="modal-dialog">
+    <div class="modal-content">
+     <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+      <h4 class="modal-title">Confirm deletion</h4>
+     </div>
+     <div class="modal-body">
+      Are you sure?
+     </div>
+     <div class="modal-footer">
+	  <form action="#" method="POST" enctype="multipart/form-data" >
+      <button type="button" class="btn gray-bg" data-dismiss="modal">Close</button>
+		<button type="submit" name="topic_id" value="<?php echo $topic;?>" type="button" class="btn red-bg">Delete Topic</button>
+	  </form>
+     </div>
+    </div>
+    <!-- /.modal-content -->
+   </div>
+   <!-- /.modal-dialog -->
+  </div>
+  <!-- /.modal -->
+  
+  <!-- deleteCommentAdmin Modal -->
+  <div class="modal fade" id="deleteCommentAdminModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+   <div class="modal-dialog">
+    <div class="modal-content">
+     <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+      <h4 class="modal-title">Confirm deletion</h4>
+     </div>
+     <div class="modal-body">
+      Which way to delete?
+     </div>
+     <div class="modal-footer">
+	  <form action="#" method="POST" enctype="multipart/form-data" >
+      <button type="button" class="btn gray-bg" data-dismiss="modal">Close</button>
+		<input type="hidden" id="delete_comment_id" name="delete_comment_id" value="">
+		<button type="submit" type="button" class="btn blue-bg">Remove Content</button>
+		<button type="submit" name="delete_complete" value="1" type="button" class="btn red-bg">Delete Complete</button>
+	  </form>
+     </div>
+    </div>
+    <!-- /.modal-content -->
+   </div>
+   <!-- /.modal-dialog -->
+  </div>
+  <!-- /.modal -->
+  
+  <!-- deleteCommentStudent Modal -->
+  <div class="modal fade" id="deleteCommentStudentModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+   <div class="modal-dialog">
+    <div class="modal-content">
+     <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+      <h4 class="modal-title">Confirm deletion</h4>
+     </div>
+     <div class="modal-body">
+      Are you sure?
+     </div>
+     <div class="modal-footer">
+	  <form action="#" method="POST" enctype="multipart/form-data" >
+      <button type="button" class="btn gray-bg" data-dismiss="modal">Close</button>
+		<input type="hidden" id="delete_comment_id_2" name="delete_comment_id" value="">
+		<button type="submit" type="button" class="btn blue-bg">Remove Content</button>
+	  </form>
+     </div>
+    </div>
+    <!-- /.modal-content -->
+   </div>
+   <!-- /.modal-dialog -->
+  </div>
+  <!-- /.modal -->
+<script>
+	function removeCommentAdmin (comment_id) {
+		$("#delete_comment_id").val( comment_id );
+		$('#deleteCommentAdminModal').modal('show');
+	}
+	function removeCommentStudent (comment_id) {
+		$("#delete_comment_id_2").val( comment_id );
+		$('#deleteCommentStudentModal').modal('show');
+	}
+  </script>
 {% endblock %}
 
 {% macro render_comment(comment) -%}
@@ -89,7 +173,7 @@
 		{% if comment.is_anonymous %}Anonymous{% else %}{{comment.name}}{% endif %}
 	{% endif %}
 	 <b onclick="myfunc2('{{ comment.comment_id }}')" class="badge bg-info">Reply</b><small class="pull-right">{{ comment.comment_time }}</small></h5>{{ comment.content }}
-	{% if comment.member_id == current_user.member_id %}
+	{% if comment.member_id == current_user.id %}
 		<a onclick="removeCommentStudent({{ comment.comment_id }})">Delete</a>
 	{% endif %}
 	<form id="{{ comment.comment_id }}" class="hide" style="display:none" action="{{ url_for('add_comment', course_id=current_course.course_id, topic_id=topic.topic_id) }}" method="POST" enctype="multipart/form-data">
