@@ -6,7 +6,7 @@ insert into student (member_id, student_id, year, department) values
 	(1, '141101020', '4', 'Computer Scince'),
 	(2, '161201020', '1', 'Medicine');
 insert into instructor (member_id, office, tel, website) values
-	(3, 'OFFICE 1', '123456789', 'google.com');
+	(3, 'OFFICE 1', '123456789', 'http://google.com');
 
 insert into course values
 	('1', '#1 Course', 'blabla', 'syllabus url'),
@@ -34,3 +34,5 @@ insert into comment (content, is_anonymous, topic_id, parent_id, author_id) valu
 	('comment content 4', 1, 3, 1, 1),
 	('comment content 5', 1, 3, 3, 2),
 	('comment content 6', 1, 3, null, 3);
+insert into news (title, summary, url, image_url, active) values
+	("Yazilimin Genc Dahileri Tobb'da", 'zaaaaaaaaaaaaa', 'https://www.etu.edu.tr/tr/haber/tobb-etu-bilgisayar-muhendisligi-bolumu-takimi-acm-icpc-seerc-2016-programlama-yarismasindan-tarihi-basari-ile-dondu', 'https://www.etu.edu.tr/files/editor_images/Odultoreni.jpg', 1);

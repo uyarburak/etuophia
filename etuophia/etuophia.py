@@ -189,7 +189,19 @@ def course_main(course_id):
     common = common_things(course_id);
     if not common:
         return "You do not have permission to see it.";
-    return render_template('course.html', current_course=common['current_course'], is_admin=common['is_admin'], topics=common['topics'], courses=common['courses']);
+    students = query_db('select student.*, member.* from enrollment, student, member where enrollment.member_id = student.member_id and enrollment.course_id = ? and student.member_id = member.member_id and is_admin != 1',
+                            [course_id], one=False)
+    instructors = query_db('select instructor.*, member.* from enrollment, instructor, member where enrollment.member_id = instructor.member_id and enrollment.course_id = ? and instructor.member_id = member.member_id',
+                            [course_id], one=False)
+    assistants = query_db('select student.*, member.* from enrollment, student, member where enrollment.member_id = student.member_id and enrollment.course_id = ? and student.member_id = member.member_id and is_admin = 1',
+                            [course_id], one=False)
+    comment_count = query_db('select count(*) as cnt from topic, comment where comment.topic_id = topic.topic_id and topic.course_id = ?',
+                            [course_id], one=True)
+    news = query_db('select * from news where active',
+                            [], one=False)
+    topics = common['topics'];
+    topic_count = (len(topics[0]['topics']) if len(topics) > 0 else 0) + (len(topics[1]['topics']) if len(topics) > 1 else 0) + (len(topics[2]['topics']) if len(topics) > 2 else 0);
+    return render_template('dashboard.html', news=news, topic_count=topic_count, comment_count=comment_count['cnt'], students=students, instructors=instructors, assistants=assistants, current_course=common['current_course'], is_admin=common['is_admin'], topics=common['topics'], courses=common['courses']);
 
 def common_things(course_id):
     enrollment_type = is_enroll(current_user.id, course_id);
@@ -233,6 +245,8 @@ def topic(course_id, topic_id):
         return "You do not have permission to see it.";
     topic = query_db('select * from topic, member where topic.course_id = ? and topic.topic_id = ? and topic.author_id = member.member_id',
                             [course_id, topic_id], one=True)
+    if not topic:
+        return "This topic doesnt belong to course " + course_id;
     comments = query_db('select * from comment, member where comment.topic_id = ? and comment.author_id = member.member_id',
                             [topic_id], one=False)
     recursive_comments = {};
