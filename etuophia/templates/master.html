@@ -25,7 +25,7 @@
 </head>
 <body>
 <header>
-  <div class="container-fluid clearfix"><a href="index.php" title="Metro Admin" class="pull-left"><img src="{{ url_for('static', filename='assets/images/logo.png') }}" height="39px" ></a>
+  <div class="container-fluid clearfix"><a href="{{ url_for('home') }}" title="Metro Admin" class="pull-left"><img src="{{ url_for('static', filename='assets/images/logo.png') }}" height="39px" ></a>
     <div class="user pull-right"><a href="#" title="User Options" data-toggle="dropdown" class="pull-right">
       <div class="pull-left">
         <h5>{{ current_user.member.name }}</h5>

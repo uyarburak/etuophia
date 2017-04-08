@@ -1,0 +1,34 @@
+{% extends "topic_sidebar.html" %}
+{% block body %}
+	<div class="container-fluid">
+	    <ol class="breadcrumb">
+	      <li>
+	        <a href="{{ url_for('home') }}">Home</a>
+	      </li>
+	      <li>New Topic</li>
+	    </ol>
+	    <div class="row">
+	    	<div class="col-md-12">
+                <div class="panel-body">
+                  <form action="{{ url_for('add_topic', course_id=current_course.course_id) }}" method="POST" enctype="multipart/form-data">
+                    <div class="form-group">
+                      <label>Title</label>
+                      <input id="topic_title" name="topic_title" type="text" class="form-control" placeholder="Enter title">
+                    </div>
+					<div class="form-group">
+                      <label class="checkbox"><input type="checkbox" checked="" name="not_locked"> Allow Comments </label>
+                    </div>
+                    <div class="form-group">
+                      <label>Content</label>
+                      <textarea id="content" name="content"></textarea>
+					<script>
+						CKEDITOR.replace('content');
+					</script>
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-success">Submit</button>
+                  </form>
+                </div>
+	    	</div>
+	  	</div>
+	</div>
+{% endblock %}

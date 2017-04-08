@@ -148,6 +148,28 @@ def login():
         return render_template('tmp_login.html', members=members);
 
 
+#Temporary login system
+@app.route('/course/<course_id>/add_topic', methods=['GET', 'POST'])
+def add_topic(course_id):
+    #if user is already logged in, redirect to home page  
+    if request.method == 'POST' and request.form['content']:
+        form = request.form;
+        locked = 1;
+        if request.form.get('not_locked'):
+            locked = 0;
+        db = get_db()
+        cur = db.cursor();
+        cur.execute('''insert into topic (content, title, locked, course_id, author_id)
+         values (?, ?, ?, ?, ?)''', (form['content'], form['topic_title'], locked, course_id, current_user.id));
+        db.commit()
+        return redirect(url_for('topic', course_id=course_id, topic_id=cur.lastrowid));
+    else:
+        common = common_things(course_id);
+        if not common:
+            return "You do not have permission to see it.";
+        return render_template('add_topic.html', current_course=common['current_course'], is_admin=common['is_admin'], topics=common['topics'], courses=common['courses']);
+
+
 @app.route('/course/<course_id>')
 @login_required
 def course_main(course_id):

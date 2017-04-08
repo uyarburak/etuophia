@@ -15,7 +15,7 @@
       </ul>
     </div>
   </div>
-<a style="width:85%; margin-left:7.5%; margin-bottom:20px;" class="green-bg btn btn-med" href="?class=<?php echo $course_id;?>&page=new_topic">New Topic <i class="icon-plus pull-right"></i> </a>
+<a style="width:85%; margin-left:7.5%; margin-bottom:20px;" class="green-bg btn btn-med" href="{{ url_for('add_topic', course_id=current_course.course_id) }}">New Topic <i class="icon-plus pull-right"></i> </a>
   <nav id="aside_nav">
     <ul>
       {% if topics %}
