@@ -7,7 +7,9 @@ create table topic (
   locked integer default 0,
   last_modified datetime default 0,
   course_id integer not null,
-  author_id integer not null
+  author_id integer not null,
+  FOREIGN KEY(course_id) REFERENCES course(course_id),
+  FOREIGN KEY(author_id) REFERENCES member(member_id)
 );
 
 drop table if exists comment;
@@ -18,7 +20,10 @@ create table comment (
   is_anonymous integer,
   author_id integer not null,
   parent_id integer,
-  topic_id integer
+  topic_id integer,
+  FOREIGN KEY(topic_id) REFERENCES topic(topic_id),
+  FOREIGN KEY(author_id) REFERENCES member(member_id),
+  FOREIGN KEY(parent_id) REFERENCES comment(comment_id)
 );
 
 create trigger if not exists update_last_modified after insert on comment
@@ -39,7 +44,9 @@ create table enrollment (
   member_id integer not null,
   course_id text not null,
   is_admin integer default 0,
-  PRIMARY KEY (member_id, course_id)
+  PRIMARY KEY (member_id, course_id),
+  FOREIGN KEY(course_id) REFERENCES course(course_id),
+  FOREIGN KEY(member_id) REFERENCES member(member_id)
 );
 
 drop table if exists homework;
@@ -47,7 +54,8 @@ create table homework (
   hw_id integer primary key autoincrement,
   deadline datetime not null,
   lock_type integer not null,
-  resource_id integer
+  resource_id integer,
+  FOREIGN KEY(resource_id) REFERENCES resource(resource_id)
 );
 
 drop table if exists instructor;
@@ -55,7 +63,8 @@ create table instructor (
   member_id integer primary key,
   office text,
   tel text,
-  website text
+  website text,
+  FOREIGN KEY(member_id) REFERENCES member(member_id)
 );
 
 drop table if exists student;
@@ -63,7 +72,8 @@ create table student (
   member_id integer primary key,
   student_id text,
   year integer,
-  department text
+  department text,
+  FOREIGN KEY(member_id) REFERENCES member(member_id)
 );
 
 drop table if exists member;
@@ -91,7 +101,9 @@ create table read_history (
   member_id integer not null,
   topic_id integer not null,
   last_read datetime default current_timestamp,
-  PRIMARY KEY (member_id, topic_id)
+  PRIMARY KEY (member_id, topic_id),
+  FOREIGN KEY(topic_id) REFERENCES topic(topic_id),
+  FOREIGN KEY(member_id) REFERENCES member(member_id)
 );
 
 drop table if exists resource;
@@ -103,5 +115,6 @@ create table resource (
   course_id text,
   member_id integer,
   resource_title text not null,
-  type integer not null
+  type integer not null,
+  FOREIGN KEY(commited_hw_id) REFERENCES homework(homework_id)
 );
