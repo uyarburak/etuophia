@@ -3,3 +3,10 @@ etuophia.db
 etuophia.egg-info
 etuophia/__init__.pyc
 etuophia/etuophia.pyc
+
+# exclude everything
+etuophia/files/*
+
+# exception to the rule
+!etuophia/files/.gitkeep 
+
