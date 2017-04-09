@@ -168,7 +168,6 @@ def login():
 @app.route('/course/<course_id>/add_topic', methods=['GET', 'POST'])
 @login_required
 def add_topic(course_id):
-    #if user is already logged in, redirect to home page  
     if request.method == 'POST' and request.form['content']:
         form = request.form;
         locked = 1;
@@ -186,10 +185,22 @@ def add_topic(course_id):
             return "You do not have permission to see it.";
         return render_template('add_topic.html', current_course=common['current_course'], is_admin=common['is_admin'], topics=common['topics'], courses=common['courses']);
 
+
+@app.route('/course/<course_id>/topic/<topic_id>/delete', methods=['POST'])
+@login_required
+def delete_topic(course_id, topic_id):
+    if(is_enroll(current_user.id, course_id)):
+        db = get_db()
+        db.execute('delete from topic where course_id=? and topic_id=?',
+                  [course_id, topic_id])
+        db.commit()
+        return redirect(url_for('course_main', course_id=course_id));
+    return abort(401)
+
+
 @app.route('/course/<course_id>/topic/<topic_id>/add_comment', methods=['POST'])
 @login_required
 def add_comment(course_id, topic_id):
-    #if user is already logged in, redirect to home page  
     if request.form['comment_content']:
         form = request.form;
         db = get_db()
