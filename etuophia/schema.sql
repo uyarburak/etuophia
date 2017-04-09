@@ -21,6 +21,11 @@ create table comment (
   topic_id integer
 );
 
+create trigger if not exists update_last_modified after insert on comment
+  begin
+    update topic set last_modified = NEW.COMMENT_TIME where TOPIC_ID = NEW.TOPIC_ID;
+  end;
+
 drop table if exists course;
 create table course (
   course_id text primary key,
@@ -85,7 +90,7 @@ drop table if exists read_history;
 create table read_history (
   member_id integer not null,
   topic_id integer not null,
-  last_read integer not null,
+  last_read datetime default current_timestamp,
   PRIMARY KEY (member_id, topic_id)
 );
 

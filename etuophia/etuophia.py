@@ -89,23 +89,18 @@ def format_datetime(timestamp):
     """Format a timestamp for display."""
     return datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S').strftime('%d/%m/%Y @ %H:%M')
 
-#None means no enrollment, 0 is normal user, 1 is admin
+
 def is_enroll(member_id, course_id):
+    """None means no enrollment, 0 is normal user, 1 is admin."""
     rv = query_db('select is_admin from enrollment where member_id = ? and course_id = ?',
                   [member_id, course_id], one=True)
     return rv[0] if rv else None
 
 
-def get_instructor(member_id):
-    rv = query_db('select * from instructor where member_id = ?',
-                  [member_id], one=True)
-    return rv[0] if rv else None
-
-
 def get_member(member_id):
+    """Return membership info by member_id. if member is an instructor, instructor field will be True otherwise, False"""
     member = None
     instructor = False
-
     member = query_db('select member.*, instructor.* from member, instructor where member.member_id = ? and member.member_id = instructor.member_id',
                           [member_id], one=True);
     if member:
@@ -114,6 +109,19 @@ def get_member(member_id):
         member = query_db('select member.*, student.* from member, student where member.member_id = ? and member.member_id = student.member_id',
                           [member_id], one=True);
     return {'member': member, 'instructor': instructor};
+
+
+def update_last_read(topic_id):
+    """Updates last read datetime for current user at topic_id"""
+    db = get_db()
+    db.execute('''insert or replace read_history (member_id, topic_id) values
+        (?, ?)''', (current_user.id, topic_id));
+    db.commit()
+
+
+def update_session_course(course_id):
+    """Updates course_id in session"""
+    session['course_id'] = course_id;
 
 
 @app.before_request
@@ -125,11 +133,20 @@ def before_request():
 @app.route('/')
 @login_required
 def home():
-    random_course = query_db('select * from enrollment where member_id = ? LIMIT 1',
-                            [current_user.id], one=True);
-    if(random_course):
-        print(random_course.keys());
-        return redirect(url_for('course_main', course_id=random_course['course_id']));
+    course_id = session['course_id'] if 'course_id' in session else None;
+    enrollment_type = None;
+    #if course_id in session, check if current user enrolled to this course
+    if course_id:
+        enrollment_type = is_enroll(current_user.id, course_id);
+    # if user didnt enroll or course_id doesnt exist in session, find a random course to redirect
+    if enrollment_type == None:
+        course_id = None;
+        random_course = query_db('select * from enrollment where member_id = ? LIMIT 1',
+                                [current_user.id], one=True);
+        if random_course:
+            course_id = random_course['course_id'];
+    if course_id:
+        return redirect(url_for('course_main', course_id=course_id));
     return "There is no course for you :(";
 
 
@@ -233,6 +250,7 @@ def common_things(course_id):
         topics.append(month);
     if len(older['topics']):
         topics.append(older);
+    update_session_course(course_id);
     return dict(current_course=course, is_admin=enrollment_type, topics=topics, courses=courses, topics_count=len(topics_all));
 
 @app.route('/course/<course_id>/topic/<topic_id>')
@@ -255,11 +273,10 @@ def topic(course_id, topic_id):
         else:
             recursive_comments[key].append(comment);
     ordered = collections.OrderedDict(sorted(recursive_comments.items()))
-    print(ordered);
+    update_last_read(topic_id);
     return render_template('topic.html', comments=ordered, topic=topic, current_course=common['current_course'], is_admin=common['is_admin'], topics=common['topics'], courses=common['courses']);
 
 
-#Temporary login system
 @app.route('/logout')
 def logout():
     logout_user();
