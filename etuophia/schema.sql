@@ -21,9 +21,9 @@ create table comment (
   author_id integer not null,
   parent_id integer,
   topic_id integer,
-  FOREIGN KEY(topic_id) REFERENCES topic(topic_id),
+  FOREIGN KEY(topic_id) REFERENCES topic(topic_id) ON DELETE CASCADE,
   FOREIGN KEY(author_id) REFERENCES member(member_id),
-  FOREIGN KEY(parent_id) REFERENCES comment(comment_id)
+  FOREIGN KEY(parent_id) REFERENCES comment(comment_id) ON DELETE CASCADE
 );
 
 create trigger if not exists update_last_modified after insert on comment
@@ -81,7 +81,7 @@ create table member (
   member_id integer primary key autoincrement,
   sex integer,
   image_url text,
-  mail text,
+  mail text unique,
   name text,
   password text
 );
@@ -101,8 +101,8 @@ create table read_history (
   member_id integer not null,
   topic_id integer not null,
   last_read datetime default current_timestamp,
-  PRIMARY KEY (member_id, topic_id),
-  FOREIGN KEY(topic_id) REFERENCES topic(topic_id),
+  PRIMARY KEY (member_id, topic_id) ON CONFLICT REPLACE,
+  FOREIGN KEY(topic_id) REFERENCES topic(topic_id) ON DELETE CASCADE,
   FOREIGN KEY(member_id) REFERENCES member(member_id)
 );
 
@@ -116,5 +116,6 @@ create table resource (
   member_id integer,
   resource_title text not null,
   type integer not null,
-  FOREIGN KEY(commited_hw_id) REFERENCES homework(homework_id)
+  FOREIGN KEY(commited_hw_id) REFERENCES homework(homework_id),
+  UNIQUE (commited_hw_id, member_id) ON CONFLICT REPLACE
 );
