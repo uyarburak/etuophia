@@ -1,4 +1,7 @@
 {% extends "topic_sidebar.html" %}
+{% block title %}
+  {{ topic.title }} at {{ current_course.course_id }} - {{ current_course.course_title }}
+{% endblock %}
 {% block body %}
 	<div class="container-fluid">
 		{% if is_admin %}

@@ -30,8 +30,18 @@
               </a>
               <div id="collapseOne" class="panel-collapse collapse in">
                 <div class="panel-body" style="padding: 5px;">
-                  {% for topic in group.topics %}
-                    <li><a href="{{ url_for('topic', course_id=current_course.course_id, topic_id=topic.topic_id) }}">{{ topic.title }}</a></li>
+                  {% for topic0 in group.topics %}
+                    {% if self._TemplateReference__context.name == 'topic.html' and topic.topic_id == topic0.topic_id %}
+                      <li class="active"><a href="{{ url_for('topic', course_id=current_course.course_id, topic_id=topic0.topic_id) }}">{{ topic0.title }}</a></li>
+                    {% else %}
+                      <li><a href="{{ url_for('topic', course_id=current_course.course_id, topic_id=topic0.topic_id) }}">{{ topic0.title }}
+                      {% if topic0.is_new == None %}
+                        <span style="background-color:#009688;">New</span>
+                      {% elif topic0.is_new == 1 %}
+                        <span style="background-color:#e91e63;">Unread</span>
+                      {% endif %}
+                      </a></li>
+                    {% endif %}
                   {% endfor %}
                 </div>
               </div>

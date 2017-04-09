@@ -114,8 +114,7 @@ def get_member(member_id):
 def update_last_read(topic_id):
     """Updates last read datetime for current user at topic_id"""
     db = get_db()
-    db.execute('''insert or replace read_history (member_id, topic_id) values
-        (?, ?)''', (current_user.id, topic_id));
+    db.execute('insert or replace into read_history (member_id, topic_id) values(?, ?)', (current_user.id, topic_id));
     db.commit()
 
 
@@ -228,8 +227,8 @@ def common_things(course_id):
                             [course_id], one=True)
     courses = query_db('select * from course, enrollment where course.course_id = enrollment.course_id and enrollment.member_id = ?',
                             [current_user.id], one=False)
-    topics_all = query_db('select * from topic where course_id = ?',
-                            [course_id], one=False)
+    topics_all = query_db('select topic.*, read_history.*, read_history.last_read < topic.last_modified as is_new from topic left join read_history on read_history.member_id = ? and read_history.topic_id = topic.topic_id where topic.course_id = ? order by topic.create_time desc',
+                            [current_user.id, course_id], one=False)
     week = {'title': 'This week', 'topics': []};
     month = {'title': 'This month', 'topics': []};
     older = {'title': 'Older', 'topics': []};
