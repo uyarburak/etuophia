@@ -41,6 +41,7 @@ def get_db():
     if not hasattr(top, 'sqlite_db'):
         top.sqlite_db = sqlite3.connect(app.config['DATABASE'])
         top.sqlite_db.row_factory = sqlite3.Row
+    top.sqlite_db.execute("PRAGMA foreign_keys = ON")
     return top.sqlite_db
 
 
@@ -197,6 +198,37 @@ def delete_topic(course_id, topic_id):
         return redirect(url_for('course_main', course_id=course_id));
     return abort(401)
 
+@app.route('/course/<course_id>/topic/<topic_id>/comment/<comment_id>/delete_completely', methods=['POST'])
+@login_required
+def delete_comment(course_id, topic_id, comment_id):
+    if(is_enroll(current_user.id, course_id)):
+        db = get_db()
+        db.execute('''delete from comment where comment_id in
+            (select comment.comment_id from comment, topic where topic.course_id = ? and comment.topic_id=? and comment.topic_id = topic.topic_id
+            and comment.comment_id=?)''', [course_id, topic_id, comment_id])
+        db.commit()
+        return redirect(url_for('topic', course_id=course_id, topic_id=topic_id));
+    return abort(401)
+
+@app.route('/course/<course_id>/topic/<topic_id>/comment/<comment_id>/delete_content', methods=['POST'])
+@login_required
+def delete_comment_content(course_id, topic_id, comment_id):
+    if(is_enroll(current_user.id, course_id)):
+        db = get_db()
+        db.execute('''update comment set content='The content of this comment has removed.' where comment_id in
+            (select comment.comment_id from comment, topic where topic.course_id = ? and comment.topic_id=? and comment.topic_id = topic.topic_id
+            and comment.comment_id = ?)''', [course_id, topic_id, comment_id])
+        db.commit()
+        return redirect(url_for('topic', course_id=course_id, topic_id=topic_id));
+    elif(is_enroll(current_user.id, course_id) == 0):
+        db = get_db()
+        db.execute('''update comment set comment.content='The content of this comment has removed.' where comment_id in
+            (select comment.comment_id from comment, topic where topic.course_id = ? and comment.topic_id=? and comment.topic_id = topic.topic_id and comment.comment_id=?
+            and comment.author_id = ?)''', [course_id, topic_id, comment_id, current_user.id])
+        db.commit()
+        return redirect(url_for('topic', course_id=course_id, topic_id=topic_id));
+    return abort(401)
+
 
 @app.route('/course/<course_id>/topic/<topic_id>/add_comment', methods=['POST'])
 @login_required
@@ -224,6 +256,8 @@ def course_main(course_id):
                             [course_id], one=False)
     comment_count = query_db('select count(*) as cnt from topic, comment where comment.topic_id = topic.topic_id and topic.course_id = ?',
                             [course_id], one=True)
+    print(query_db('select comment.* from topic, comment where comment.topic_id = topic.topic_id and topic.course_id = ?',
+                            [course_id], one=False));
     news = query_db('select * from news where active',
                             [], one=False)
     return render_template('dashboard.html', news=news, topic_count=common['topics_count'], comment_count=comment_count['cnt'], students=students, instructors=instructors, assistants=assistants, current_course=common['current_course'], is_admin=common['is_admin'], topics=common['topics'], courses=common['courses']);
