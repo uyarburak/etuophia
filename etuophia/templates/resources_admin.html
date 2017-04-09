@@ -1,0 +1,167 @@
+{% extends "resource.html" %}
+{% block resource %}
+	{{ render_resources('General Resources', 0, 'green') }}
+	  <div class="col-md-12">
+        <div class="panel colored">
+          <div class="panel-heading red-bg">
+            <h3 class="panel-title">Homeworks</h3>
+          </div>
+          <div class="panel-body">
+            <table class="table">
+              <thead>
+							<tr>
+							  <th>Title</th>
+							  <th>Upload Time</th>
+							  <th>Due Date</th>
+							  <th>Uploader</th>
+							</tr>
+              </thead>
+              <tbody>
+				<tr>
+					<td><a href="#" target="_blank">TITLE</a></td>
+					<td>d/m/Y - H:i</td>
+					<td>d/m/Y - H:i</td>
+					<td>Name</td>
+				</tr>
+              </tbody>
+            </table>
+			UPLOAD HW
+          </div>
+
+        </div>
+
+      </div>
+	  
+	   	{{ render_resources('Lecture Notes', 1, 'blue') }}
+	  	{{ render_resources('HW Solutions', 2, 'orange') }}
+	  	{{ render_resources('Unlisted Resources (Only Admins can see)', 3, 'black') }}
+
+<!-- deleteResource Modal -->
+  <div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+   <div class="modal-dialog">
+    <div class="modal-content">
+     <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+      <h4 class="modal-title">Confirm deletion</h4>
+     </div>
+     <div class="modal-body">
+      It will remove chosen resource!
+     </div>
+     <div class="modal-footer">
+	  <form action="delete_resource.php" method="POST" enctype="multipart/form-data" >
+      	<button type="button" class="btn gray-bg" data-dismiss="modal">Close</button>
+		<button type="submit" id="delete_button" name="res_id" value="" type="button" class="btn blue-bg">Delete</button>
+	  </form>
+     </div>
+    </div>
+    <!-- /.modal-content -->
+   </div>
+   <!-- /.modal-dialog -->
+  </div>
+  <!-- /.modal -->
+  
+  <!-- changeType Modal -->
+  <div class="modal fade" id="changeTypeModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2" aria-hidden="true">
+   <div class="modal-dialog">
+    <div class="modal-content">
+     <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+      <h4 class="modal-title">Resource Type Changing</h4>
+     </div>
+	 
+	  <form action="change_resource_type.php" method="POST" enctype="multipart/form-data" >
+     <div class="modal-body">
+	 New Type:
+	  <select class="form-control" id="new_res_type" name="new_res_type"><option value="1" >General Resource</option> <option value="2">Lecture Note</option> <option value="3">HW Solution</option><option value="4">Unlisted</option></select>
+     </div>
+     <div class="modal-footer">
+      <button type="button" class="btn gray-bg" data-dismiss="modal">Close</button>
+		<button type="submit" id="change_button" name="res_id" value="" type="button" class="btn blue-bg">Change Type</button>
+	  </form>
+     </div>
+    </div>
+    <!-- /.modal-content -->
+   </div>
+   <!-- /.modal-dialog -->
+  </div>
+  <!-- /.modal -->
+  <script>
+	function deleteResource (res_id) {
+		$("#delete_button").val( res_id );
+		$('#confirmModal').modal('show');
+	}
+	function changeType (res_id, res_type) {
+		$("#change_button").val( res_id );
+		$("#new_res_type").val( res_type );
+		$('#changeTypeModal').modal('show');
+	}
+  </script>
+
+<script src="{{ url_for('static', filename='js/file-input/bootstrap-filestyle.min.js') }}"></script>
+{% endblock %}
+
+{% macro render_resources(type, index, color) -%}
+<div class="col-md-12">
+        <div class="panel colored">
+          <div class="panel-heading {{ color }}-bg">
+            <h3 class="panel-title">{{ type }}</h3>
+          </div>
+          <div class="panel-body">
+            <table class="table">
+              <thead>
+							<tr>
+							  <th>Title</th>
+							  <th>Upload Time</th>
+							  <th>Uploader</th>
+							  <th>Actions</th>
+							</tr>
+              </thead>
+              <tbody>
+              	{% for resource in resources[index] %}
+              		<tr>
+						<td><a href="resource.php?id={{ resource.resource_id }}" target="_blank">{{ resource.resource_title }}</a></td>
+						<td>{{ resource.pub_date }}</td>
+						<td>{{ resource.name }}</td>
+						<td><a onclick="changeType({{ resource.resource_id }}, {{ resource.type }})" role="button" class="btn btn-med green-bg"><i class="icon-exchange"></i></a>
+						<a onclick="deleteResource({{ resource.resource_id }})" role="button" class="btn btn-med red-bg"><i class="icon-trash"></i></a>
+						</td>
+					</tr>
+              	{% endfor %}
+              </tbody>
+            </table>
+
+                <div class="col-lg-12">
+				  <!-- .dropdown -->
+                  <section class="panel panel-default pos-rlt clearfix">
+                    <header class="panel-heading">
+                      <ul class="nav nav-pills pull-right">
+                        <li>
+                          <a href="#" class="panel-toggle text-muted"><i class="fa fa-caret-down text-active"></i><i class="fa fa-caret-up text"></i></a>
+                        </li>
+                      </ul>
+                      Upload Resources
+                    </header>
+                    <div class="panel-body clearfix">
+					<form action="{{ url_for('add_resource', course_id=current_course.course_id, resource_type=index+1) }}" method="POST" enctype="multipart/form-data" class="form-horizontal" id="resource-validation">
+                    
+					<div class="form-group">
+                      <label class="col-sm-2 control-label">File input</label>
+                      <div class="col-sm-10">
+					  <input type="file" name="file" class="styled col-lg-3" />
+                      </div>
+                    </div>
+                    <div class="line line-dashed line-lg pull-in"></div>
+                    <div class="form-group">
+                      <div class="col-sm-4 col-sm-offset-2">
+                        <button type="submit" class="btn btn-primary">Upload</button>
+                      </div>
+                    </div>
+                  </form>
+                      </div>
+                    </div>
+          </div>
+
+        </div>
+
+      </div>
+{%- endmacro %}

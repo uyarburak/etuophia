@@ -110,11 +110,12 @@
       Which way to delete?
      </div>
      <div class="modal-footer">
-	  <form action="#" method="POST" enctype="multipart/form-data" >
       <button type="button" class="btn gray-bg" data-dismiss="modal">Close</button>
-		<input type="hidden" id="delete_comment_id" name="delete_comment_id" value="">
+	  <form id="comment_removal_form1" action="#" method="POST" enctype="multipart/form-data" >
 		<button type="submit" type="button" class="btn blue-bg">Remove Content</button>
-		<button type="submit" name="delete_complete" value="1" type="button" class="btn red-bg">Delete Complete</button>
+	  </form>
+	  <form id="comment_removal_form2" action="#" method="POST" enctype="multipart/form-data" >
+		<button type="submit" type="button" class="btn red-bg">Delete Complete</button>
 	  </form>
      </div>
     </div>
@@ -136,9 +137,8 @@
       Are you sure?
      </div>
      <div class="modal-footer">
-	  <form action="#" method="POST" enctype="multipart/form-data" >
+	  <form id="comment_removal_form3" action="#" method="POST" enctype="multipart/form-data" >
       <button type="button" class="btn gray-bg" data-dismiss="modal">Close</button>
-		<input type="hidden" id="delete_comment_id_2" name="delete_comment_id" value="">
 		<button type="submit" type="button" class="btn blue-bg">Remove Content</button>
 	  </form>
      </div>
@@ -150,11 +150,12 @@
   <!-- /.modal -->
 <script>
 	function removeCommentAdmin (comment_id) {
-		$("#delete_comment_id").val( comment_id );
+		$("#comment_removal_form1")[0].action = "{{ url_for('topic', course_id=current_course.course_id, topic_id=topic.topic_id) }}/comment/" + comment_id + "/delete_content";
+		$("#comment_removal_form2")[0].action = "{{ url_for('topic', course_id=current_course.course_id, topic_id=topic.topic_id) }}/comment/" + comment_id + "/delete_completely";
 		$('#deleteCommentAdminModal').modal('show');
 	}
 	function removeCommentStudent (comment_id) {
-		$("#delete_comment_id_2").val( comment_id );
+		$("#comment_removal_form3")[0].action = "{{ url_for('topic', course_id=current_course.course_id, topic_id=topic.topic_id) }}/comment/" + comment_id + "/delete_content";
 		$('#deleteCommentStudentModal').modal('show');
 	}
   </script>

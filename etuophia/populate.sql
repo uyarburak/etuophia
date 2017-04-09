@@ -37,3 +37,12 @@ insert into comment (content, is_anonymous, topic_id, parent_id, author_id) valu
 
 insert into news (title, summary, url, image_url, active) values
 	("Yazilimin Genc Dahileri Tobb'da", 'zaaaaaaaaaaaaa', 'https://www.etu.edu.tr/tr/haber/tobb-etu-bilgisayar-muhendisligi-bolumu-takimi-acm-icpc-seerc-2016-programlama-yarismasindan-tarihi-basari-ile-dondu', 'https://www.etu.edu.tr/files/editor_images/Odultoreni.jpg', 1);
+
+insert into resource (url, course_id, member_id, resource_title, type, commited_hw_id) values
+	('blablaurl', 2, 3, 'resource 1', 0, null),
+	('blablaurl', 2, 3, 'resource 2', 3, null),
+	('blablaurl', 2, 1, 'resource 3', 4, null),
+	('blablaurl', 2, 3, 'resource 4', 2, null),
+	('blablaurl', 2, 1, 'resource 5', 1, null),
+	('blablaurl', 2, 1, 'resource 6', 1, null),
+	('blablaurl', 2, 1, 'resource 7', 1, null);

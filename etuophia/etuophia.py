@@ -8,6 +8,7 @@
     :copyright: (c) 2017 by Burak UYAR.
 """
 
+import os
 import time
 import collections
 from sqlite3 import dbapi2 as sqlite3
@@ -16,6 +17,7 @@ from datetime import datetime
 from flask import Flask, request, session, url_for, redirect, \
      render_template, abort, g, flash, _app_ctx_stack
 from werkzeug import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
 from flask_login import LoginManager, login_required, logout_user, login_user, UserMixin, current_user
 
 # configuration
@@ -24,10 +26,14 @@ PER_PAGE = 30
 DEBUG = True
 SECRET_KEY = 'development key'
 
+UPLOAD_FOLDER = '/files'
+ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
+
 # create our little application :)
 app = Flask(__name__)
 app.config.from_object(__name__)
 app.config.from_envvar('ETUOPHIA_SETTINGS', silent=True)
+app.config['UPLOAD_FOLDER'] = os.path.dirname(__file__) + UPLOAD_FOLDER
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -41,6 +47,7 @@ def get_db():
     if not hasattr(top, 'sqlite_db'):
         top.sqlite_db = sqlite3.connect(app.config['DATABASE'])
         top.sqlite_db.row_factory = sqlite3.Row
+    top.sqlite_db.execute("PRAGMA foreign_keys = ON")
     return top.sqlite_db
 
 
@@ -197,6 +204,37 @@ def delete_topic(course_id, topic_id):
         return redirect(url_for('course_main', course_id=course_id));
     return abort(401)
 
+@app.route('/course/<course_id>/topic/<topic_id>/comment/<comment_id>/delete_completely', methods=['POST'])
+@login_required
+def delete_comment(course_id, topic_id, comment_id):
+    if(is_enroll(current_user.id, course_id)):
+        db = get_db()
+        db.execute('''delete from comment where comment_id in
+            (select comment.comment_id from comment, topic where topic.course_id = ? and comment.topic_id=? and comment.topic_id = topic.topic_id
+            and comment.comment_id=?)''', [course_id, topic_id, comment_id])
+        db.commit()
+        return redirect(url_for('topic', course_id=course_id, topic_id=topic_id));
+    return abort(401)
+
+@app.route('/course/<course_id>/topic/<topic_id>/comment/<comment_id>/delete_content', methods=['POST'])
+@login_required
+def delete_comment_content(course_id, topic_id, comment_id):
+    if(is_enroll(current_user.id, course_id)):
+        db = get_db()
+        db.execute('''update comment set content='The content of this comment has removed.' where comment_id in
+            (select comment.comment_id from comment, topic where topic.course_id = ? and comment.topic_id=? and comment.topic_id = topic.topic_id
+            and comment.comment_id = ?)''', [course_id, topic_id, comment_id])
+        db.commit()
+        return redirect(url_for('topic', course_id=course_id, topic_id=topic_id));
+    elif(is_enroll(current_user.id, course_id) == 0):
+        db = get_db()
+        db.execute('''update comment set comment.content='The content of this comment has removed.' where comment_id in
+            (select comment.comment_id from comment, topic where topic.course_id = ? and comment.topic_id=? and comment.topic_id = topic.topic_id and comment.comment_id=?
+            and comment.author_id = ?)''', [course_id, topic_id, comment_id, current_user.id])
+        db.commit()
+        return redirect(url_for('topic', course_id=course_id, topic_id=topic_id));
+    return abort(401)
+
 
 @app.route('/course/<course_id>/topic/<topic_id>/add_comment', methods=['POST'])
 @login_required
@@ -208,6 +246,35 @@ def add_comment(course_id, topic_id):
          (?, ?, ?, ?, ?)''', (form['comment_content'], form['is_anonymous'], topic_id, form['parent_id'], current_user.id));
         db.commit()
     return redirect(url_for('topic', course_id=course_id, topic_id=topic_id));
+
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+@app.route('/course/<course_id>/add_resource/<resource_type>', methods=['POST'])
+@login_required
+def add_resource(course_id, resource_type):
+    # check if the post request has the file part
+    if 'file' not in request.files:
+        print('No file part')
+        return redirect(request.url)
+    file = request.files['file']
+    # if user does not select file, browser also
+    # submit a empty part without filename
+    if file.filename == '':
+        print('No selected file')
+        return redirect(request.url)
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        print(filename)
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        db = get_db()
+        db.execute('''insert into resource (url, course_id, member_id, resource_title, type, commited_hw_id) values
+         (?, ?, ?, ?, ?, null)''', (UPLOAD_FOLDER+filename, course_id, current_user.id, filename, resource_type));
+        db.commit()
+    return redirect(url_for('resources', course_id=course_id))
 
 
 @app.route('/course/<course_id>')
@@ -224,6 +291,8 @@ def course_main(course_id):
                             [course_id], one=False)
     comment_count = query_db('select count(*) as cnt from topic, comment where comment.topic_id = topic.topic_id and topic.course_id = ?',
                             [course_id], one=True)
+    print(query_db('select comment.* from topic, comment where comment.topic_id = topic.topic_id and topic.course_id = ?',
+                            [course_id], one=False));
     news = query_db('select * from news where active',
                             [], one=False)
     return render_template('dashboard.html', news=news, topic_count=common['topics_count'], comment_count=comment_count['cnt'], students=students, instructors=instructors, assistants=assistants, current_course=common['current_course'], is_admin=common['is_admin'], topics=common['topics'], courses=common['courses']);
@@ -285,6 +354,22 @@ def topic(course_id, topic_id):
     ordered = collections.OrderedDict(sorted(recursive_comments.items()))
     update_last_read(topic_id);
     return render_template('topic.html', comments=ordered, topic=topic, current_course=common['current_course'], is_admin=common['is_admin'], topics=common['topics'], courses=common['courses']);
+
+@app.route('/course/<course_id>/resources')
+@login_required
+def resources(course_id):
+    common = common_things(course_id);
+    if not common:
+        return "You do not have permission to see it.";
+    resources_db = query_db('select * from resource, member where resource.course_id = ? and resource.member_id = member.member_id and resource.type', [course_id], one=False)
+    resources = [[], [], [], []]
+    for resource in resources_db:
+        resources[resource['type']-1].append(resource);
+    print(resources);
+    if common['is_admin']:
+        return render_template('resources_admin.html', resources=resources, current_course=common['current_course'], is_admin=common['is_admin'], topics=common['topics'], courses=common['courses']);
+    else:
+        return render_template('resources_student.html', current_course=common['current_course'], is_admin=common['is_admin'], topics=common['topics'], courses=common['courses']);
 
 
 @app.route('/logout')

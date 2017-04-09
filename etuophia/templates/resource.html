@@ -1,0 +1,15 @@
+{% extends "topic_sidebar.html" %}
+{% block title %}
+  Resources of {{ current_course.course_id }} - {{ current_course.course_title }}
+{% endblock %}
+{% block body %}
+  <div class="container-fluid">
+    <div class="page-header">
+      <h1>Resources
+      <small>Resources and Homeworks</small></h1>
+    </div>
+    <div class="row">
+		{% block resource %}{% endblock %}
+    </div>
+  </div>
+{% endblock %}
