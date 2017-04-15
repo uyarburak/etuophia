@@ -263,6 +263,22 @@ def change_resource_type(course_id, resource_id):
     return redirect(url_for('resources', course_id=course_id))
 
 
+@app.route('/course/<course_id>/delete_res/<resource_id>', methods=['POST'])
+@login_required
+def delete_resource(course_id, resource_id):
+    file = query_db('select * from resource where resource_id = ? and course_id = ?',
+                            [resource_id, course_id], one=True)
+    try:
+        os.remove(app.config['UPLOAD_FOLDER'] + "/" + file['resource_title']);
+    except:
+        print("dammnn")
+    db = get_db()
+    db.execute('''delete from resource where resource_id = ? and course_id = ?
+        ''', (resource_id, course_id));
+    db.commit()
+    return redirect(url_for('resources', course_id=course_id))
+
+
 @app.route('/course/<course_id>/add_resource/<resource_type>', methods=['POST'])
 @login_required
 def add_resource(course_id, resource_type):
@@ -278,7 +294,6 @@ def add_resource(course_id, resource_type):
         return redirect(request.url)
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
-        print(filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         db = get_db()
         db.execute('''insert into resource (url, course_id, member_id, resource_title, type, commited_hw_id) values

@@ -48,7 +48,7 @@
       It will remove chosen resource!
      </div>
      <div class="modal-footer">
-	  <form action="delete_resource.php" method="POST" enctype="multipart/form-data" >
+	  <form id="delete_resource_form" action="#" method="POST" enctype="multipart/form-data" >
       	<button type="button" class="btn gray-bg" data-dismiss="modal">Close</button>
 		<button type="submit" id="delete_button" name="res_id" value="" type="button" class="btn blue-bg">Delete</button>
 	  </form>
@@ -89,6 +89,7 @@
 	function deleteResource (res_id) {
 		$("#delete_button").val( res_id );
 		$('#confirmModal').modal('show');
+		$("#delete_resource_form")[0].action = "{{ url_for('course_main', course_id=current_course.course_id) }}/delete_res/" + res_id;
 	}
 	function changeType (res_id, res_type) {
 		$("#change_button").val( res_id );
