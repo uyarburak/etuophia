@@ -69,10 +69,10 @@
       <h4 class="modal-title">Resource Type Changing</h4>
      </div>
 	 
-	  <form action="change_resource_type.php" method="POST" enctype="multipart/form-data" >
+	  <form id="type_change_form" action="#" method="POST" enctype="multipart/form-data" >
      <div class="modal-body">
 	 New Type:
-	  <select class="form-control" id="new_res_type" name="new_res_type"><option value="1" >General Resource</option> <option value="2">Lecture Note</option> <option value="3">HW Solution</option><option value="4">Unlisted</option></select>
+	  <select class="form-control" id="type" name="type"><option value="1" >General Resource</option> <option value="2">Lecture Note</option> <option value="3">HW Solution</option><option value="4">Unlisted</option></select>
      </div>
      <div class="modal-footer">
       <button type="button" class="btn gray-bg" data-dismiss="modal">Close</button>
@@ -94,6 +94,7 @@
 		$("#change_button").val( res_id );
 		$("#new_res_type").val( res_type );
 		$('#changeTypeModal').modal('show');
+		$("#type_change_form")[0].action = "{{ url_for('course_main', course_id=current_course.course_id) }}/resource/" + res_id;
 	}
   </script>
 

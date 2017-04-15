@@ -252,6 +252,16 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+@app.route('/course/<course_id>/resource/<resource_id>', methods=['POST'])
+@login_required
+def change_resource_type(course_id, resource_id):
+    if request.form['type'] != None:
+        db = get_db()
+        db.execute('''update resource set type = ? where resource_id = ? and course_id = ?
+            ''', (request.form['type'], resource_id, course_id));
+        db.commit()
+    return redirect(url_for('resources', course_id=course_id))
+
 
 @app.route('/course/<course_id>/add_resource/<resource_type>', methods=['POST'])
 @login_required

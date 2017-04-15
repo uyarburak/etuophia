@@ -1,15 +1,15 @@
 PRAGMA foreign_keys = ON;
-drop table read_history;
-drop table news;
-drop table homework;
-drop table resource;
-drop table comment;
-drop table enrollment;
-drop table student;
-drop table instructor;
-drop table topic;
-drop table course;
-drop table member;
+drop table if exists read_history;
+drop table if exists news;
+drop table if exists homework;
+drop table if exists resource;
+drop table if exists comment;
+drop table if exists enrollment;
+drop table if exists student;
+drop table if exists instructor;
+drop table if exists topic;
+drop table if exists course;
+drop table if exists member;
 
 create table member (
   member_id integer primary key autoincrement,
@@ -93,6 +93,7 @@ create table resource (
   resource_title text not null,
   type integer not null,
   FOREIGN KEY(member_id) REFERENCES member(member_id),
+  FOREIGN KEY(course_id) REFERENCES course(course_id),
   FOREIGN KEY(commited_hw_id) REFERENCES homework(hw_id),
   UNIQUE (commited_hw_id, member_id) ON CONFLICT REPLACE
 );
