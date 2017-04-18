@@ -282,22 +282,40 @@ def delete_resource(course_id, resource_id):
 @app.route('/course/<course_id>/add_resource/<resource_type>', methods=['POST'])
 @login_required
 def add_resource(course_id, resource_type):
+    add_res(course_id, resource_type, request);
+    return redirect(url_for('resources', course_id=course_id))
+
+def add_res(course_id, resource_type, request):
     # check if the post request has the file part
     if 'file' not in request.files:
         print('No file part')
-        return redirect(request.url)
+        return -1;
     file = request.files['file']
     # if user does not select file, browser also
     # submit a empty part without filename
     if file.filename == '':
         print('No selected file')
-        return redirect(request.url)
+        return 0;
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         db = get_db()
-        db.execute('''insert into resource (url, course_id, member_id, resource_title, type, commited_hw_id) values
+        cur = db.cursor();
+        cur.execute('''insert into resource (url, course_id, member_id, resource_title, type, commited_hw_id) values
          (?, ?, ?, ?, ?, null)''', (UPLOAD_FOLDER+filename, course_id, current_user.id, filename, resource_type));
+        db.commit()
+        return cur.lastrowid;
+
+@app.route('/course/<course_id>/add_homework', methods=['POST'])
+@login_required
+def add_homework(course_id):
+    res_id = add_res(course_id, 0, request);
+    if res_id > 0:
+        lock_type = 1 if request.form.get('lock_type') else 0;
+        deadline = datetime.strptime(request.form['deadline'], '%d/%m/%Y %H:%M');
+        db = get_db()
+        db.execute('''insert into homework (deadline, lock_type, resource_id) values
+         (?, ?, ?)''', (deadline, lock_type, res_id));
         db.commit()
     return redirect(url_for('resources', course_id=course_id))
 
@@ -387,12 +405,13 @@ def resources(course_id):
     if not common:
         return "You do not have permission to see it.";
     resources_db = query_db('select * from resource, member where resource.course_id = ? and resource.member_id = member.member_id and resource.type', [course_id], one=False)
+    homeworks = query_db('select * from resource, member, homework where resource.course_id = ? and resource.member_id = member.member_id and resource.resource_id = homework.resource_id', [course_id], one=False)
     resources = [[], [], [], []]
     for resource in resources_db:
         resources[resource['type']-1].append(resource);
     print(resources);
     if common['is_admin']:
-        return render_template('resources_admin.html', resources=resources, current_course=common['current_course'], is_admin=common['is_admin'], topics=common['topics'], courses=common['courses']);
+        return render_template('resources_admin.html', homeworks=homeworks, resources=resources, current_course=common['current_course'], is_admin=common['is_admin'], topics=common['topics'], courses=common['courses']);
     else:
         return render_template('resources_student.html', current_course=common['current_course'], is_admin=common['is_admin'], topics=common['topics'], courses=common['courses']);
 
