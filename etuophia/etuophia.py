@@ -405,15 +405,19 @@ def resources(course_id):
     if not common:
         return "You do not have permission to see it.";
     resources_db = query_db('select * from resource, member where resource.course_id = ? and resource.member_id = member.member_id and resource.type', [course_id], one=False)
-    homeworks = query_db('select * from resource, member, homework where resource.course_id = ? and resource.member_id = member.member_id and resource.resource_id = homework.resource_id', [course_id], one=False)
     resources = [[], [], [], []]
     for resource in resources_db:
         resources[resource['type']-1].append(resource);
     print(resources);
     if common['is_admin']:
+        homeworks = query_db('select * from resource, member, homework where resource.course_id = ? and resource.member_id = member.member_id and resource.resource_id = homework.resource_id', [course_id], one=False)
         return render_template('resources_admin.html', homeworks=homeworks, resources=resources, current_course=common['current_course'], is_admin=common['is_admin'], topics=common['topics'], courses=common['courses']);
     else:
-        return render_template('resources_student.html', current_course=common['current_course'], is_admin=common['is_admin'], topics=common['topics'], courses=common['courses']);
+        homeworks = query_db('''
+
+            SELECT r.resource_id, r.resource_title, r.url, r.pub_date, m.name, h.deadline, h.hw_id, s.resource_id as STUDENT_HW_ID, CASE WHEN h.lock_type = 2 THEN datetime('now') >  h.deadline ELSE h.lock_type = 1 END AS IS_LOCK FROM homework h LEFT JOIN resource s ON s.commited_hw_id = h.hw_id AND s.member_id = ?, resource r INNER JOIN member m ON r.member_id = m.member_id where r.course_id = ? AND r.type = 0 and r.resource_id  = h.resource_id order by r.pub_date
+                ''', [current_user.id, course_id], one=False)
+        return render_template('resources_student.html', homeworks=homeworks, resources=resources, current_course=common['current_course'], is_admin=common['is_admin'], topics=common['topics'], courses=common['courses']);
 
 
 @app.route('/logout')

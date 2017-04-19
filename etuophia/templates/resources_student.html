@@ -1,3 +1,152 @@
 {% extends "resource.html" %}
 {% block resource %}
+
+	{{ render_resources('General Resources', 0, 'green') }}
+	{{ render_homeworks() }}
+	{{ render_resources('Lecture Notes', 1, 'blue') }}
+	{{ render_resources('HW Solutions', 2, 'orange') }}
+
+	<!-- uploadHomework Modal -->
+  <div class="modal fade" id="uploadHomeworkModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2" aria-hidden="true">
+   <div class="modal-dialog">
+    <div class="modal-content">
+     <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+      <h4 class="modal-title">Upload homework</h4>
+     </div>
+	 
+	  <form action="#" method="POST" enctype="multipart/form-data" >
+     <div class="modal-body">
+      Choose File:
+	  <input type="file" name="homework_file" class="styled col-lg-12" />
+	  </div>
+     <div class="modal-footer">
+      <button type="button" class="btn gray-bg" data-dismiss="modal">Close</button>
+		<button type="submit" id="homework_id" name="hw_id" value="" type="button" class="btn blue-bg">Send Homework</button>
+	  </form>
+     </div>
+    </div>
+    <!-- /.modal-content -->
+   </div>
+   <!-- /.modal-dialog -->
+  </div>
+  <!-- /.modal -->
+  
+<!-- deleteResource Modal -->
+  <div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+   <div class="modal-dialog">
+    <div class="modal-content">
+     <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+      <h4 class="modal-title">Confirm deletion</h4>
+     </div>
+     <div class="modal-body">
+      It will remove chosen resource!
+     </div>
+     <div class="modal-footer">
+	  <form action="" method="POST" enctype="multipart/form-data" >
+      <button type="button" class="btn gray-bg" data-dismiss="modal">Close</button>
+		<button type="submit" id="delete_button" name="res_id" value="" type="button" class="btn blue-bg">Delete</button>
+	  </form>
+     </div>
+    </div>
+    <!-- /.modal-content -->
+   </div>
+   <!-- /.modal-dialog -->
+  </div>
+  <!-- /.modal -->
+	  
+	  
+	    <script>
+	function uploadHomework (hw_id) {
+		$("#homework_id").val( hw_id );
+		$('#uploadHomeworkModal').modal('show');
+	}
+	function deleteResource (res_id) {
+		$("#delete_button").val( res_id );
+		$('#confirmModal').modal('show');
+	}
+  </script>
 {% endblock %}
+{% macro render_resources(type, index, color) -%}
+<div class="col-md-12">
+        <div class="panel colored">
+          <div class="panel-heading {{ color }}-bg">
+            <h3 class="panel-title">{{ type }}</h3>
+          </div>
+          <div class="panel-body">
+            <table class="table">
+              <thead>
+							<tr>
+							  <th>Title</th>
+							  <th>Upload Time</th>
+							  <th>Uploader</th>
+							</tr>
+              </thead>
+              <tbody>
+              	{% for resource in resources[index] %}
+              		<tr>
+						<td><a href="?id={{ resource.resource_id }}" target="_blank">{{ resource.resource_title }}</a></td>
+						<td>{{ resource.pub_date|datetimeformat }}</td>
+						<td>{{ resource.name }}</td>
+					</tr>
+              	{% endfor %}
+              </tbody>
+            </table>
+        </div>
+
+      </div>
+    </div>
+{%- endmacro %}
+
+{% macro render_homeworks() -%}
+<div class="col-md-12">
+        <div class="panel colored">
+          <div class="panel-heading red-bg">
+            <h3 class="panel-title">Homeworks</h3>
+          </div>
+          <div class="panel-body">
+            <table class="table">
+              <thead>
+							<tr>
+							  <th>Title</th>
+							  <th>Upload Time</th>
+							  <th>Due Date</th>
+							  <th>Uploader</th>
+							  <th>Actions</th>
+							</tr>
+              </thead>
+              <tbody>
+              {% for hw in homeworks %}
+                <tr>
+                  <td><a href="?id={{ hw.resource_id }}" target="_blank">{{ hw.resource_title }}</a></td>
+                  <td>{{ hw.pub_date|datetimeformat }}</td>
+                  <td>{{ hw.deadline|datetimeformat }}</td>
+                  <td>{{ hw.name }}</td>
+                  {% if hw.IS_LOCK %}
+                  	<td>
+                  	{% if hw.STUDENT_HW_ID %}
+						<a href="?id={{ hw.STUDENT_HW_ID }}" target="_blank" class="btn btn-med blue-bg"><i class="icon-search"></i></a>
+					{% endif %}
+					<span class="label label-info">Locked</span></td>
+                  {% else %}
+                  	{% if hw.STUDENT_HW_ID %}
+                  		<td><a href="?id={{ hw.STUDENT_HW_ID }}" target="_blank" class="btn btn-med blue-bg"><i class="icon-search"></i></a>
+							<a onclick="uploadHomework({{ hw.hw_id }})" role="button" class="btn btn-med orange-bg"><i class="icon-edit"></i></a>
+							<a onclick="deleteResource({{ hw.STUDENT_HW_ID }})" role="button" class="btn btn-med red-bg"><i class="icon-trash"></i></a>
+						</td>
+					{% else %}
+						<td><a onclick="uploadHomework({{ hw.hw_id }})" role="button" class="btn btn-med green-bg"><i class="icon-upload-alt"></i></a></td>
+					{% endif %}
+                  {% endif %}
+                </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+
+      </div>
+
+{%- endmacro %}

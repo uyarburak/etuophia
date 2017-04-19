@@ -55,7 +55,7 @@ create table enrollment (
 create table topic (
   topic_id integer primary key autoincrement,
   content text not null,
-  create_time datetime default current_timestamp,
+  create_time datetime default (datetime('now')),
   title text not null,
   locked integer default 0,
   last_modified datetime default 0,
@@ -68,7 +68,7 @@ create table topic (
 create table comment (
   comment_id integer primary key autoincrement,
   content text,
-  comment_time datetime default current_timestamp,
+  comment_time datetime default (datetime('now')),
   is_anonymous integer,
   author_id integer not null,
   parent_id integer,
@@ -85,7 +85,7 @@ create trigger if not exists update_last_modified after insert on comment
 
 create table resource (
   resource_id integer primary key autoincrement,
-  pub_date datetime default current_timestamp,
+  pub_date datetime default (datetime('now')),
   url text,
   commited_hw_id integer,
   course_id text,
