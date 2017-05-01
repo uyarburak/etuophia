@@ -1,0 +1,39 @@
+{% extends "master.html" %}
+{% block sidebar %}
+<!--TOP NAV ENDS-->
+<aside id="left_panel">
+  <div class="container-fluid">
+    <div class="btn-group" style="margin-bottom:20px;width: 100%;">
+      <a href="#" style="width: 100%;" class="pink-bg btn btn-med" data-toggle="dropdown">{{ current_course.course_id }}  <i class="pull-right icon-"></i></a>
+      <ul style="width: 100%;" class="dropdown-menu">
+        {% for course in courses %}
+          <li><a href="{{ url_for('course_main', course_id=course.course_id) }}">{{ course.course_id }}</a></li>
+        {% else %}
+          <li>No Course</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <nav id="aside_nav">
+    <ul>
+      {% if is_admin == 1 %}
+      <li><a href="javascript:;">Manage Members <i class="pull-right icon-angle-down"></i></a>
+        <ul>
+         <li><a href="#">Manage Students</a></li>
+         <li><a href="#">Add Students</a></li>
+        </ul></li>
+      {% endif %}
+      <li><a href="javascript:;">Homeworks<i class="pull-right icon-angle-down"></i></a>
+      <ul>
+        {% for homework in homeworks %}
+          <li><a href="{{ url_for('manage_homework', course_id=current_course.course_id, hw_id=homework.hw_id) }}">Homework ({{ homework.resource_title }})</a></li>
+        {% else %}
+        <li style="margin:20px;"><span> There is no homework assigned for this class.</span></li>
+        {% endfor %}
+      </ul></li>
+    <li>
+    </ul>
+  </nav>
+</aside>
+<!--ASIDE LEFT PANNEL ENDS-->
+{% endblock %}

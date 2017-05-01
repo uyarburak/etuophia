@@ -187,7 +187,7 @@ def add_topic(course_id):
         db.commit()
         return redirect(url_for('topic', course_id=course_id, topic_id=cur.lastrowid));
     else:
-        common = common_things(course_id);
+        common = common_things_topic_sidebar(course_id);
         if not common:
             return "You do not have permission to see it.";
         return render_template('add_topic.html', current_course=common['current_course'], is_admin=common['is_admin'], topics=common['topics'], courses=common['courses']);
@@ -325,11 +325,30 @@ def add_homework(course_id):
         db.commit()
     return redirect(url_for('resources', course_id=course_id))
 
+@app.route('/course/<course_id>/homework/<hw_id>')
+@login_required
+def manage_homework(course_id, hw_id):
+    common = common_things_settings(course_id);
+    if not common:
+        return "You do not have permission to see it.";
+    homework = query_db("select resource.*, member.*, homework.*, CASE WHEN homework.lock_type = 1 THEN datetime('now') >  homework.deadline ELSE homework.lock_type = 2 END AS IS_LOCK from member, resource, homework where resource.member_id = member.member_id and homework.resource_id = resource.resource_id and homework.hw_id = ?", [hw_id], one=True);
+    assigments = query_db('select m.*, s.*, r.* from enrollment e, student s, member m left join resource r on r.member_id = m.member_id and r.commited_hw_id = ? where e.member_id = m.member_id and not e.is_admin and e.course_id = ? and s.member_id = m.member_id ORDER BY m.name', [hw_id, course_id], one=False)
+    return render_template('homework_stats.html', assigments=assigments, current_homework=homework, homeworks=common['homeworks'], current_course=common['current_course'], is_admin=common['is_admin'], courses=common['courses']);
+
+
+@app.route('/course/<course_id>/settings')
+@login_required
+def course_settings(course_id):
+    common = common_things_settings(course_id);
+    if not common:
+        return "You do not have permission to see it.";
+    return render_template('class_settings.html', homeworks=common['homeworks'], current_course=common['current_course'], is_admin=common['is_admin'], courses=common['courses']);
+
 
 @app.route('/course/<course_id>')
 @login_required
 def course_main(course_id):
-    common = common_things(course_id);
+    common = common_things_topic_sidebar(course_id);
     if not common:
         return "You do not have permission to see it.";
     students = query_db('select student.*, member.* from enrollment, student, member where enrollment.member_id = student.member_id and enrollment.course_id = ? and student.member_id = member.member_id and is_admin != 1',
@@ -346,7 +365,22 @@ def course_main(course_id):
                             [], one=False)
     return render_template('dashboard.html', news=news, topic_count=common['topics_count'], comment_count=comment_count['cnt'], students=students, instructors=instructors, assistants=assistants, current_course=common['current_course'], is_admin=common['is_admin'], topics=common['topics'], courses=common['courses']);
 
-def common_things(course_id):
+def common_things_settings(course_id):
+    enrollment_type = is_enroll(current_user.id, course_id);
+    if enrollment_type == None:
+        return None;
+    if(enrollment_type and not current_user.instructor):
+        enrollment_type = 2;
+    course = query_db('select * from course where course_id = ?',
+                            [course_id], one=True)
+    courses = query_db('select * from course, enrollment where course.course_id = enrollment.course_id and enrollment.member_id = ?',
+                            [current_user.id], one=False)
+    homeworks = query_db('select * from resource, homework where resource.course_id = ? and resource.resource_id = homework.resource_id', [course_id], one=False)
+    update_session_course(course_id);
+    return dict(current_course=course, is_admin=enrollment_type, courses=courses, homeworks=homeworks);
+
+
+def common_things_topic_sidebar(course_id):
     enrollment_type = is_enroll(current_user.id, course_id);
     if enrollment_type == None:
         return None;
@@ -384,7 +418,7 @@ def common_things(course_id):
 @app.route('/course/<course_id>/topic/<topic_id>')
 @login_required
 def topic(course_id, topic_id):
-    common = common_things(course_id);
+    common = common_things_topic_sidebar(course_id);
     if not common:
         return "You do not have permission to see it.";
     topic = query_db('select * from topic, member where topic.course_id = ? and topic.topic_id = ? and topic.author_id = member.member_id',
@@ -407,7 +441,7 @@ def topic(course_id, topic_id):
 @app.route('/course/<course_id>/resources')
 @login_required
 def resources(course_id):
-    common = common_things(course_id);
+    common = common_things_topic_sidebar(course_id);
     if not common:
         return "You do not have permission to see it.";
     resources_db = query_db('select * from resource, member where resource.course_id = ? and resource.member_id = member.member_id and resource.type', [course_id], one=False)

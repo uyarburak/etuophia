@@ -1,0 +1,195 @@
+{% extends "class_settings.html" %}
+{% block title %}
+  {{ current_homework.resource_title }} @ {{ current_course.course_id }} - {{ current_course.course_title }}
+{% endblock %}
+{% block body %} 
+<link rel="stylesheet" href="{{ url_for('static', filename='assets/css/icheck-skins/all.css') }}"/>
+<div class="container-fluid"> 
+  <div class="page-header"> 
+   <h1>Manage Homework ({{ current_homework.resource_title }})</h1> 
+  </div> 
+  <div class="row">
+       <div class="col-md-6">
+      <div class="panel">
+       <div class="panel-heading">
+        <h3 class="panel-title">Information</h3>
+        <ul class="pull-right toolbar">
+         <li><a href="#" class="icon-button mini-max"><i class="icon-"></i></a></li>
+        </ul>
+       </div>
+       <div class="panel-body">
+       <div class="invoice-details">
+      <div style="background:#f5f5f5;"><span>Academic: </span><strong>{{ current_homework.name }}</strong></div>
+      <div><span>Give Date: </span><strong>{{ current_homework.pub_date }}</strong></div>
+      <div><span>Due Date: </span><strong>{{ current_homework.deadline }}</strong></div>
+      </div>
+             <div class="col-md-9">
+        <div class="panel">
+         <div class="panel-heading">
+        <h3 class="panel-title">Extend Due Date</h3>
+         </div>
+         <div class="panel-body">
+          <form action="#" method="POST" enctype="multipart/form-data" class="form-horizontal" id="homework-validation">
+            <div class="form-group">
+               <label class="col-sm-3 control-label">New Due Date</label>
+               <div id="datetimepicker" class="col-lg-6" style="width: 60%;">
+                <div class="input-group datetimepicker input-append date">
+                 <input type="text" name="duedate" class="form-control" value="{{ current_homework.deadline }}"><span class="input-group-addon add-on accordion-toggle"><i data-time-icon="icon-time" data-date-icon="icon-calendar" class="icon-calendar"></i></span></input>
+                </div>
+               </div>
+            </div>
+            <div class="form-group">
+             <label class="col-sm-3 control-label"></label>
+               <div class="col-lg-6">
+               
+            <label class="checkbox demotest"><input type="checkbox" class="icheck" data-skin="square" data-color="blue" name="auto_lock"> Auto Lock After Duedate </input></label>
+               </div>
+            </div>
+            <div class="line line-dashed line-lg pull-in"></div>
+            <div class="form-group">
+              <div class="col-sm-4 col-sm-offset-3">
+              <button type="submit" class="btn btn-primary">Extend</button>
+              </div>
+            </div>
+                  </form>
+          
+        </div>
+        </div>
+       </div>
+          <div class="col-md-3">
+        <div class="panel">
+         <div class="panel-heading">
+        <h3 class="panel-title">Freeze</h3>
+         </div>
+         <div class="panel-body">
+          <form action="update_homework_admin.php" method="POST" enctype="multipart/form-data" class="form-horizontal">
+            <div class="line line-dashed line-lg pull-in"></div>
+            <div class="form-group">
+              <div class="col-sm-4 col-sm-offset-3">
+              {% if current_homework.IS_LOCK %}
+                <button type="submit" name="unlock_button" class="btn btn-success">Unlock It</button>
+              {% else %}
+                <button type="submit" name="lock_button" class="btn btn-primary">Lock It</button>
+              {% endif %}
+              </div>
+            </div>
+          </form>
+        </div>
+        </div>
+       </div>
+    </div>
+      </div>
+     </div>
+   <div class="col-md-6">
+      <div class="panel">
+       <div class="panel-heading">
+        <h3 class="panel-title">Stats</h3>
+        <ul class="pull-right toolbar">
+         <li><a href="#" class="icon-button"><i class="icon-"></i></a></li>
+         <li><a href="#" class="icon-button reload-box"><i class="icon-"></i></a></li>
+         <li><a href="#" class="icon-button mini-max"><i class="icon-"></i></a></li>
+         <li><a href="#" class="icon-button close-box"><i class="icon-"></i></a></li>
+        </ul>
+       </div>
+       <div class="panel-body">
+      <div id="PieChart" style="width: 100%; height: 300px;"></div>
+       </div>
+      </div>
+     </div> 
+  </div>
+  <div class="row"> 
+   <div class="col-md-12">
+    <div class="panel"> 
+     <div class="panel-heading"> 
+      <h3 class="panel-title">Assignment</h3> 
+      <ul class="pull-right toolbar"> 
+       <li><a href="#" class="icon-button mini-max"><i class="icon-"></i></a></li>
+      </ul> 
+     </div> 
+     <div class="panel-body" id="flip-scroll"> 
+      <table class="table table-striped"> 
+       <thead> 
+        <tr> 
+         <th>Name</th>
+         <th>Student #</th>
+     <th>Mail</th> 
+     <th>Department</th> 
+         <th>Upload Date</th>
+         <th>Resource</th> 
+         <th>Status</th> 
+        </tr> 
+       </thead> 
+       <tbody>
+       {% set done_in_time, done_late, not_done = [0], [0], [0] %}
+        {% for assigment in assigments %}
+          <tr>
+            <td>{{ assigment.name }}</td>
+            <td>{{ assigment.student_id }}</td>
+            <td><a href ='mailto:{{ assigment.mail }}' >{{ assigment.mail }}</td>
+            <td>{{ assigment.department }}</td>
+            {% if assigment.resource_id %}
+              <td>{{ assigment.pub_date }}</td>
+              <td><a href="#" target="_blank" ><i class="icon-ok"></i> Show</a></td>
+              {% if assigment.pub_date > current_homework.deadline %}
+                <td><span class='label label-warning'>Late</span></td>
+                {% if done_late.append(done_late.pop() + 1) %}{% endif %}
+              {% else %}
+                <td><span class='label label-success'>Success</span></td>
+                {% if done_in_time.append(done_in_time.pop() + 1) %}{% endif %}
+              {% endif %}
+            {% else %}
+              <td>-</td>
+              <td><i class="icon-ban-circle"></i></td>
+              <td><span class='label label-danger'>Not Done</span></td>
+                {% if not_done.append(not_done.pop() + 1) %}{% endif %}
+            {% endif %}
+          </tr>
+        {% endfor %}
+       </tbody> 
+      </table> 
+    <a href="#" class="btn btn-large green-bg pull-right">Download {{ done_in_time[0]+done_late[0] }} Homeworks</a>
+     </div> 
+    </div> 
+   </div> 
+  </div> 
+ </div>
+<script src="{{ url_for('static', filename='assets/js/scripts.js') }}"></script>
+  <script src="{{ url_for('static', filename='assets/js/plugins/chartjs/globalize.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='assets/js/plugins/chartjs/dx.chartjs.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/file-input/bootstrap-filestyle.min.js') }}"></script>
+<script>
+$(function (){
+
+/**********************************
+Pie Charts
+**********************************/
+var PieChartdataSource = [
+    { country: "Done in Time", area: {{ done_in_time[0] }} },
+    { country: "Done Late", area: {{ done_late[0] }} },
+    { country: "Not Done", area: {{ not_done[0] }} }
+];
+
+$("#PieChart").dxPieChart({
+    size:{ 
+        width: 500
+    },
+    dataSource: PieChartdataSource,
+    series: [
+        {
+            argumentField: "country",
+            valueField: "area",
+            label:{
+                visible: true,
+                connector:{
+                    visible:true,           
+                    width: 1
+                }
+            }
+        }
+    ]
+});
+
+
+});
+</script>
+{% endblock %}

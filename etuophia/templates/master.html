@@ -57,7 +57,7 @@
 	      <li><a href="{{ url_for('course_main', course_id=current_course.course_id) }}" title="Q/A"><i class="icon-comments"></i> Q/A</a></li>
 	      <li><a href="{{ url_for('resources', course_id=current_course.course_id) }}" title="RESOURCES"><i class="icon-folder-open"></i> RESOURCES</a></li>
 	      {% if is_admin %}
-	      	<li><a href="#" title="Class Settings"><i class="icon-cog"></i> Class Settings</a></li>
+	      	<li><a href="{{ url_for('course_settings', course_id=current_course.course_id) }}" title="Class Settings"><i class="icon-cog"></i> Class Settings</a></li>
 	      {% endif %}
 	    </ul>
 	  </div>
