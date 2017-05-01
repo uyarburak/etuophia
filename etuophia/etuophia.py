@@ -291,7 +291,7 @@ def add_resource_student(course_id, homework_id):
     add_res(course_id, -1, request, homework_id);
     return redirect(url_for('resources', course_id=course_id))
 
-def add_res(course_id, resource_type, request, commited_hw_id='null'):
+def add_res(course_id, resource_type, request, commited_hw_id=None):
     # check if the post request has the file part
     if 'file' not in request.files:
         print('No file part')
@@ -363,7 +363,9 @@ def course_main(course_id):
                             [course_id], one=False));
     news = query_db('select * from news where active',
                             [], one=False)
-    return render_template('dashboard.html', news=news, topic_count=common['topics_count'], comment_count=comment_count['cnt'], students=students, instructors=instructors, assistants=assistants, current_course=common['current_course'], is_admin=common['is_admin'], topics=common['topics'], courses=common['courses']);
+    upcoming_homeworks = query_db("select * from homework, resource where homework.resource_id = resource.resource_id and homework.deadline > datetime('now') and resource.course_id = ?",
+                            [course_id], one=False)
+    return render_template('dashboard.html', upcoming_homeworks=upcoming_homeworks, news=news, topic_count=common['topics_count'], comment_count=comment_count['cnt'], students=students, instructors=instructors, assistants=assistants, current_course=common['current_course'], is_admin=common['is_admin'], topics=common['topics'], courses=common['courses']);
 
 def common_things_settings(course_id):
     enrollment_type = is_enroll(current_user.id, course_id);

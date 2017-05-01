@@ -71,7 +71,12 @@
         <div class="panel-body no-padding">
           <div class="slimScrollDiv" style="position: relative; overflow: hidden; width: auto; height: 285px;">
           <ul class="feeds overflow-scroll visible-scroll" style="height: 285px; overflow: hidden; width: auto;">
-            <li><a href="#" target="_blank"><span class="blue-bg"><i class="icon-pushpin"></i></span>Assigment Title</a></li>
+
+            {% for assigment in upcoming_homeworks%}
+              <li><a href="#" target="_blank"><span class="blue-bg"><i class="icon-pushpin"></i></span>{{ assigment.resource_title }}</a></li>
+            {% else %}
+              <li>There is no upcoming assigment for this class</li>
+            {% endfor %}
           </ul>
           <div class="slimScrollBar ui-draggable" style="background: rgb(102, 102, 102); width: 4px; position: absolute; top: 0px; opacity: 0.4; display: block; border-radius: 4px; z-index: 99; right: 0px; height: 141.507px;"></div><div class="slimScrollRail" style="width: 4px; height: 100%; position: absolute; top: 0px; display: none; border-radius: 4px; background: rgb(51, 51, 51); opacity: 0.2; z-index: 90; right: 0px;"></div></div>
         </div>
