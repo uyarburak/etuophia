@@ -15,7 +15,7 @@ from sqlite3 import dbapi2 as sqlite3
 from hashlib import md5
 from datetime import datetime
 from flask import Flask, request, session, url_for, redirect, \
-     render_template, abort, g, flash, _app_ctx_stack
+     render_template, abort, g, flash, _app_ctx_stack, send_file
 from werkzeug import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from flask_login import LoginManager, login_required, logout_user, login_user, UserMixin, current_user
@@ -444,7 +444,11 @@ def topic(course_id, topic_id):
 @login_required
 def resource(course_id, resource_id):
     resource = query_db('select * from resource where course_id = ? and resource_id = ?', [course_id, resource_id], one=True)
-    return resource['url'];
+    try:
+        return send_file(os.path.dirname(__file__)+resource['url'], attachment_filename=resource['resource_title'])
+    except Exception as e:
+        return "File not found. It may has been removed."
+
 
 @app.route('/course/<course_id>/resources')
 @login_required
