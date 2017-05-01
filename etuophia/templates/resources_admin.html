@@ -19,7 +19,7 @@
               <tbody>
               {% for hw in homeworks %}
                 <tr>
-                  <td><a href="?id={{ hw.resource_id }}" target="_blank">{{ hw.resource_title }}</a></td>
+                  <td><a href="{{ url_for('resource', course_id=current_course.course_id, resource_id=hw.resource_id) }}" target="_blank">{{ hw.resource_title }}</a></td>
                   <td>{{ hw.pub_date|datetimeformat }}</td>
                   <td>{{ hw.deadline|datetimeformat }}</td>
                   <td>{{ hw.name }}</td>
@@ -123,7 +123,7 @@
               <tbody>
               	{% for resource in resources[index] %}
               		<tr>
-						<td><a href="?id={{ resource.resource_id }}" target="_blank">{{ resource.resource_title }}</a></td>
+						<td><a href="{{ url_for('resource', course_id=current_course.course_id, resource_id=resource.resource_id) }}" target="_blank">{{ resource.resource_title }}</a></td>
 						<td>{{ resource.pub_date|datetimeformat }}</td>
 						<td>{{ resource.name }}</td>
 						<td><a onclick="changeType({{ resource.resource_id }}, {{ resource.type }})" role="button" class="btn btn-med green-bg"><i class="icon-exchange"></i></a>

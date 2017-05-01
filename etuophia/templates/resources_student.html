@@ -86,7 +86,7 @@
               <tbody>
               	{% for resource in resources[index] %}
               		<tr>
-						<td><a href="?id={{ resource.resource_id }}" target="_blank">{{ resource.resource_title }}</a></td>
+						<td><a href="{{ url_for('resource', course_id=current_course.course_id, resource_id=resource.resource_id) }}" target="_blank">{{ resource.resource_title }}</a></td>
 						<td>{{ resource.pub_date|datetimeformat }}</td>
 						<td>{{ resource.name }}</td>
 					</tr>
@@ -119,19 +119,19 @@
               <tbody>
               {% for hw in homeworks %}
                 <tr>
-                  <td><a href="?id={{ hw.resource_id }}" target="_blank">{{ hw.resource_title }}</a></td>
+                  <td><a href="{{ url_for('resource', course_id=current_course.course_id, resource_id=hw.resource_id) }}" target="_blank">{{ hw.resource_title }}</a></td>
                   <td>{{ hw.pub_date|datetimeformat }}</td>
                   <td>{{ hw.deadline|datetimeformat }}</td>
                   <td>{{ hw.name }}</td>
                   {% if hw.IS_LOCK %}
                   	<td>
                   	{% if hw.STUDENT_HW_ID %}
-						<a href="?id={{ hw.STUDENT_HW_ID }}" target="_blank" class="btn btn-med blue-bg"><i class="icon-search"></i></a>
+						<a href="{{ url_for('resource', course_id=current_course.course_id, resource_id=hw.STUDENT_HW_ID) }}" target="_blank" class="btn btn-med blue-bg"><i class="icon-search"></i></a>
 					{% endif %}
 					<span class="label label-info">Locked</span></td>
                   {% else %}
                   	{% if hw.STUDENT_HW_ID %}
-                  		<td><a href="?id={{ hw.STUDENT_HW_ID }}" target="_blank" class="btn btn-med blue-bg"><i class="icon-search"></i></a>
+                  		<td><a href="{{ url_for('resource', course_id=current_course.course_id, resource_id=hw.STUDENT_HW_ID) }}" target="_blank" class="btn btn-med blue-bg"><i class="icon-search"></i></a>
 							<a onclick="uploadHomework({{ hw.hw_id }})" role="button" class="btn btn-med orange-bg"><i class="icon-edit"></i></a>
 							<a onclick="deleteResource({{ hw.STUDENT_HW_ID }})" role="button" class="btn btn-med red-bg"><i class="icon-trash"></i></a>
 						</td>

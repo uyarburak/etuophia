@@ -440,6 +440,12 @@ def topic(course_id, topic_id):
     update_last_read(topic_id);
     return render_template('topic.html', comments=ordered, topic=topic, current_course=common['current_course'], is_admin=common['is_admin'], topics=common['topics'], courses=common['courses']);
 
+@app.route('/course/<course_id>/resource/<resource_id>', methods=['GET'])
+@login_required
+def resource(course_id, resource_id):
+    resource = query_db('select * from resource where course_id = ? and resource_id = ?', [course_id, resource_id], one=True)
+    return resource['url'];
+
 @app.route('/course/<course_id>/resources')
 @login_required
 def resources(course_id):

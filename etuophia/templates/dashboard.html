@@ -73,7 +73,7 @@
           <ul class="feeds overflow-scroll visible-scroll" style="height: 285px; overflow: hidden; width: auto;">
 
             {% for assigment in upcoming_homeworks%}
-              <li><a href="#" target="_blank"><span class="blue-bg"><i class="icon-pushpin"></i></span>{{ assigment.resource_title }}</a></li>
+              <li><a href="{{ url_for('resource', course_id=current_course.course_id, resource_id=assigment.resource_id) }}" target="_blank"><span class="blue-bg"><i class="icon-pushpin"></i></span>{{ assigment.resource_title }}</a></li>
             {% else %}
               <li>There is no upcoming assigment for this class</li>
             {% endfor %}
