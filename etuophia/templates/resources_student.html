@@ -15,14 +15,14 @@
       <h4 class="modal-title">Upload homework</h4>
      </div>
 	 
-	  <form action="#" method="POST" enctype="multipart/form-data" >
+	  <form id='homework_upload_form' action="#" method="POST" enctype="multipart/form-data" >
      <div class="modal-body">
       Choose File:
-	  <input type="file" name="homework_file" class="styled col-lg-12" />
+	  <input type="file" name="file" class="styled col-lg-12" />
 	  </div>
      <div class="modal-footer">
       <button type="button" class="btn gray-bg" data-dismiss="modal">Close</button>
-		<button type="submit" id="homework_id" name="hw_id" value="" type="button" class="btn blue-bg">Send Homework</button>
+		<button type="submit" type="button" class="btn blue-bg">Send Homework</button>
 	  </form>
      </div>
     </div>
@@ -44,9 +44,9 @@
       It will remove chosen resource!
      </div>
      <div class="modal-footer">
-	  <form action="" method="POST" enctype="multipart/form-data" >
+	  <form id="delete_resource_form" action="" method="POST" enctype="multipart/form-data" >
       <button type="button" class="btn gray-bg" data-dismiss="modal">Close</button>
-		<button type="submit" id="delete_button" name="res_id" value="" type="button" class="btn blue-bg">Delete</button>
+		<button type="submit" type="button" class="btn blue-bg">Delete</button>
 	  </form>
      </div>
     </div>
@@ -59,12 +59,12 @@
 	  
 	    <script>
 	function uploadHomework (hw_id) {
-		$("#homework_id").val( hw_id );
 		$('#uploadHomeworkModal').modal('show');
+    $("#homework_upload_form")[0].action = "{{ url_for('course_main', course_id=current_course.course_id) }}/homework/" + hw_id;
 	}
 	function deleteResource (res_id) {
-		$("#delete_button").val( res_id );
 		$('#confirmModal').modal('show');
+    $("#delete_resource_form")[0].action = "{{ url_for('course_main', course_id=current_course.course_id) }}/delete_res/" + res_id;
 	}
   </script>
 {% endblock %}

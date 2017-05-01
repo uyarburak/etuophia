@@ -285,7 +285,13 @@ def add_resource(course_id, resource_type):
     add_res(course_id, resource_type, request);
     return redirect(url_for('resources', course_id=course_id))
 
-def add_res(course_id, resource_type, request):
+@app.route('/course/<course_id>/homework/<homework_id>', methods=['POST'])
+@login_required
+def add_resource_student(course_id, homework_id):
+    add_res(course_id, -1, request, homework_id);
+    return redirect(url_for('resources', course_id=course_id))
+
+def add_res(course_id, resource_type, request, commited_hw_id='null'):
     # check if the post request has the file part
     if 'file' not in request.files:
         print('No file part')
@@ -302,7 +308,7 @@ def add_res(course_id, resource_type, request):
         db = get_db()
         cur = db.cursor();
         cur.execute('''insert into resource (url, course_id, member_id, resource_title, type, commited_hw_id) values
-         (?, ?, ?, ?, ?, null)''', (UPLOAD_FOLDER+filename, course_id, current_user.id, filename, resource_type));
+         (?, ?, ?, ?, ?, ?)''', (UPLOAD_FOLDER+"/"+filename, course_id, current_user.id, filename, resource_type, commited_hw_id));
         db.commit()
         return cur.lastrowid;
 
@@ -415,7 +421,7 @@ def resources(course_id):
     else:
         homeworks = query_db('''
 
-            SELECT r.resource_id, r.resource_title, r.url, r.pub_date, m.name, h.deadline, h.hw_id, s.resource_id as STUDENT_HW_ID, CASE WHEN h.lock_type = 2 THEN datetime('now') >  h.deadline ELSE h.lock_type = 1 END AS IS_LOCK FROM homework h LEFT JOIN resource s ON s.commited_hw_id = h.hw_id AND s.member_id = ?, resource r INNER JOIN member m ON r.member_id = m.member_id where r.course_id = ? AND r.type = 0 and r.resource_id  = h.resource_id order by r.pub_date
+            SELECT r.resource_id, r.resource_title, r.url, r.pub_date, m.name, h.deadline, h.hw_id, s.resource_id as STUDENT_HW_ID, CASE WHEN h.lock_type = 1 THEN datetime('now') >  h.deadline ELSE h.lock_type = 2 END AS IS_LOCK FROM homework h LEFT JOIN resource s ON s.commited_hw_id = h.hw_id AND s.member_id = ?, resource r INNER JOIN member m ON r.member_id = m.member_id where r.course_id = ? AND r.type = 0 and r.resource_id  = h.resource_id order by r.pub_date
                 ''', [current_user.id, course_id], one=False)
         return render_template('resources_student.html', homeworks=homeworks, resources=resources, current_course=common['current_course'], is_admin=common['is_admin'], topics=common['topics'], courses=common['courses']);
 
