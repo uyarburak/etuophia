@@ -11,6 +11,8 @@
 import os
 import time
 import collections
+import zipfile
+from io import BytesIO
 from sqlite3 import dbapi2 as sqlite3
 from hashlib import md5
 from datetime import datetime
@@ -448,6 +450,25 @@ def resource(course_id, resource_id):
         return send_file(os.path.dirname(__file__)+resource['url'], attachment_filename=resource['resource_title'])
     except Exception as e:
         return "File not found. It may has been removed."
+
+@app.route('/course/<course_id>/homework/<homework_id>/zip')
+@login_required
+def zipped_resources(course_id, homework_id):
+    hw = query_db('select * from homework, resource where homework.resource_id = resource.resource_id and hw_id = ?', [homework_id], one=True)
+    files = query_db('select * from resource, member, student where student.member_id = member.member_id and member.member_id = resource.member_id and resource.course_id = ? and resource.commited_hw_id = ?', [course_id, homework_id], one=False)
+    if not files:
+        return "There is no assigments for this homework!";
+    memory_file = BytesIO()
+    with zipfile.ZipFile(memory_file, 'w') as zf:
+        for file in files:
+            directory = 'On Time/' if hw['deadline'] > file['pub_date'] else 'Late/'
+            info = zipfile.ZipInfo(os.path.dirname(__file__)+file['url'], date_time=datetime.strptime(file['pub_date'], '%Y-%m-%d %H:%M:%S').timetuple()[:6])
+            info.filename = directory+file['student_id'] +'_' + file['name'] + '_' + file['resource_title']
+            info.compress_type = zipfile.ZIP_DEFLATED
+            zf.writestr(info, file['resource_title'])
+    zf.close()
+    memory_file.seek(0)
+    return send_file(memory_file, attachment_filename=hw['resource_title'] + '_' + datetime.now().strftime('%d-%m@%H-%M') +'.zip', as_attachment=True);
 
 
 @app.route('/course/<course_id>/resources')

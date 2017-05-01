@@ -129,7 +129,7 @@
             <td>{{ assigment.department }}</td>
             {% if assigment.resource_id %}
               <td>{{ assigment.pub_date }}</td>
-              <td><a href="#" target="_blank" ><i class="icon-ok"></i> Show</a></td>
+              <td><a href="{{ url_for('resource', course_id=current_course.course_id, resource_id=assigment.resource_id) }}" target="_blank" ><i class="icon-ok"></i> Show</a></td>
               {% if assigment.pub_date > current_homework.deadline %}
                 <td><span class='label label-warning'>Late</span></td>
                 {% if done_late.append(done_late.pop() + 1) %}{% endif %}
@@ -146,8 +146,8 @@
           </tr>
         {% endfor %}
        </tbody> 
-      </table> 
-    <a href="#" class="btn btn-large green-bg pull-right">Download {{ done_in_time[0]+done_late[0] }} Homeworks</a>
+      </table>
+    <a href="{% if done_in_time[0]+done_late[0] %}{{ url_for('zipped_resources', course_id=current_course.course_id, homework_id=current_homework.hw_id) }}{% endif %}" class="btn btn-large green-bg pull-right">Download {{ done_in_time[0]+done_late[0] }} Homeworks</a>
      </div> 
     </div> 
    </div> 
