@@ -252,9 +252,6 @@ def add_comment(course_id, topic_id):
 @app.route('/course/<course_id>/edit', methods=['POST'])
 @login_required
 def edit_course(course_id):
-    print request.form['syllabus_url']
-    print request.form['description']
-    print course_id
     db = get_db()
     db.execute('''update course set syllabus = ?, description = ? where course_id = ?
             ''', (request.form['syllabus_url'], request.form['description'], course_id));
@@ -358,6 +355,17 @@ def course_settings(course_id):
         return "You do not have permission to see it.";
     return render_template('class_settings.html', homeworks=common['homeworks'], current_course=common['current_course'], is_admin=common['is_admin'], courses=common['courses']);
 
+@app.route('/course/<course_id>/students')
+@login_required
+def course_students(course_id):
+    common = common_things_settings(course_id);
+    if common and common['is_admin'] :
+        students = query_db('select student.*, member.* from enrollment, student, member where enrollment.member_id = student.member_id and enrollment.course_id = ? and student.member_id = member.member_id and is_admin != 1',
+                            [course_id], one=False)
+        assistants = query_db('select student.*, member.* from enrollment, student, member where enrollment.member_id = student.member_id and enrollment.course_id = ? and student.member_id = member.member_id and is_admin = 1',
+                            [course_id], one=False)
+        return render_template('course_students.html', students=students, assistants=assistants, current_course=common['current_course'], is_admin=common['is_admin'], courses=common['courses']);
+    return "You do not have permission to see it.";
 
 @app.route('/course/<course_id>')
 @login_required

@@ -19,7 +19,7 @@
       {% if is_admin == 1 %}
       <li><a href="javascript:;">Manage Members <i class="pull-right icon-angle-down"></i></a>
         <ul>
-         <li><a href="#">Manage Students</a></li>
+         <li><a href="{{ url_for('course_students', course_id=current_course.course_id)}}">Manage Students</a></li>
          <li><a href="#">Add Students</a></li>
         </ul></li>
       {% endif %}
