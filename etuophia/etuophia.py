@@ -249,6 +249,18 @@ def add_comment(course_id, topic_id):
         db.commit()
     return redirect(url_for('topic', course_id=course_id, topic_id=topic_id));
 
+@app.route('/course/<course_id>/edit', methods=['POST'])
+@login_required
+def edit_course(course_id):
+    print request.form['syllabus_url']
+    print request.form['description']
+    print course_id
+    db = get_db()
+    db.execute('''update course set syllabus = ?, description = ? where course_id = ?
+            ''', (request.form['syllabus_url'], request.form['description'], course_id));
+    db.commit()
+    return redirect(url_for('course_settings', course_id=course_id))
+
 
 def allowed_file(filename):
     return '.' in filename and \
